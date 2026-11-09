@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corporate Empire: Office Tycoon</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2332;
+    --panel2: #243044;
+    --accent: #3b82f6;
+    --accent2: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --purple: #a855f7;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --desk: #334155;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f, #0f172a);
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+
+  .stats { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+
+  .stat { text-align: right; }
+  .stat-label { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 1.05rem; font-weight: 700; }
+  .money { color: var(--accent2); }
+  .income { color: var(--accent); }
+  .prestige { color: var(--purple); }
+  .rep { color: var(--warning); }
+
+  main {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 12px;
+    padding: 12px;
+    max-width: 1520px;
+    margin: 0 auto;
+    min-height: calc(100vh - 64px);
+  }
+
+  @media (max-width: 1200px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border-radius: 12px;
+    border: 1px solid #334155;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .panel h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    padding: 6px 5px;
+    background: var(--panel2);
+    border: none;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 55px;
+  }
+  .tab.active { background: var(--accent); color: white; }
+  .tab:hover:not(.active) { background: #2d3f56; color: var(--text); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .office-floor {
+    background: #0c1220;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    padding: 14px;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .floor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .floor-title { font-size: 1.05rem; font-weight: 700; }
+  .company-type-badge {
+    background: var(--panel2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .rep-bar-wrap {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #334155;
+  }
+  .rep-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .rep-rank {
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .rep-next {
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .rep-benefits {
+    font-size: 0.65rem;
+    color: var(--accent2);
+    margin-top: 4px;
+  }
+
+  .desks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+    flex: 1;
+  }
+
+  .desk {
+    background: var(--desk);
+    border-radius: 10px;
+    padding: 8px 5px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+  }
+  .desk.empty {
+    border: 2px dashed #475569;
+    background: transparent;
+    color: var(--muted);
+  }
+  .desk.occupied { border-color: #475569; }
+  .desk.occupied:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .desk .emoji { font-size: 1.5rem; }
+  .desk .name { font-size: 0.68rem; font-weight: 600; }
+  .desk .role { font-size: 0.58rem; color: var(--muted); }
+  .desk .earn { font-size: 0.62rem; color: var(--accent2); font-weight: 600; }
+  .desk.producing { animation: pulse 1.2s ease-in-out infinite; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35); }
+    50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+  }
+
+  .hire-list, .product-list, .rival-list, .upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .card {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: #475569; }
+  .card.locked { opacity: 0.55; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-weight: 600; font-size: 0.82rem; }
+  .card-desc { font-size: 0.68rem; color: var(--muted); }
+  .card-stats { font-size: 0.65rem; color: var(--accent2); margin-top: 2px; }
+  .card-lock { font-size: 0.65rem; color: var(--warning); margin-top: 2px; }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .tier-1 { background: #334155; color: #94a3b8; }
+  .tier-2 { background: #1e3a5f; color: #60a5fa; }
+  .tier-3 { background: #3b0764; color: #c084fc; }
+  .tier-4 { background: #713f12; color: #fbbf24; }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 11px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover:not(:disabled) { background: #2563eb; }
+  .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+  .btn-success { background: var(--accent2); color: #052e16; }
+  .btn-success:hover:not(:disabled) { background: #16a34a; }
+  .btn-success:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+  .btn-warning { background: var(--warning); color: #451a03; }
+  .btn-warning:hover:not(:disabled) { background: #d97706; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-purple { background: var(--purple); color: white; }
+  .btn-purple:hover:not(:disabled) { background: #9333ea; }
+  .btn-sm { padding: 5px 8px; font-size: 0.68rem; }
+
+  .log {
+    background: #0c1220;
+    border-radius: 8px;
+    padding: 8px;
+    height: 110px;
+    overflow-y: auto;
+    font-size: 0.68rem;
+    color: var(--muted);
+    border: 1px solid #1e293b;
+  }
+  .log-entry { margin-bottom: 3px; }
+  .log-entry.good { color: var(--accent2); }
+  .log-entry.bad { color: var(--danger); }
+  .log-entry.info { color: var(--accent); }
+  .log-entry.prestige { color: var(--purple); }
+  .log-entry.rep { color: var(--warning); }
+
+  .expand-section {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid #334155;
+  }
+
+  .progress-bar {
+    height: 5px;
+    background: #1e293b;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.3s;
+  }
+  .progress-fill.rep {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+  .toast.show { opacity: 1; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--panel);
+    border-radius: 16px;
+    border: 1px solid #334155;
+    padding: 22px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-size: 1.25rem; margin-bottom: 6px; }
+  .modal p { color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; }
+
+  .company-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .company-option {
+    background: var(--panel2);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .company-option:hover { border-color: var(--accent); }
+  .company-option.selected { border-color: var(--accent); background: #1e3a5f; }
+  .company-option .c-emoji { font-size: 1.8rem; margin-bottom: 4px; }
+  .company-option .c-name { font-weight: 700; font-size: 0.88rem; }
+  .company-option .c-desc { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+
+  .rival-card {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 10px;
+    border-left: 3px solid var(--danger);
+  }
+  .rival-card.friendly { border-left-color: var(--accent2); }
+  .rival-name { font-weight: 700; font-size: 0.85rem; }
+  .rival-power { font-size: 0.72rem; color: var(--muted); }
+  .rival-actions { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+
+  .product-card {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .product-card.launched { border-left: 3px solid var(--accent2); }
+  .product-card.developing { border-left: 3px solid var(--warning); }
+
+  .prestige-box {
+    background: linear-gradient(135deg, #2e1065, #1e1b4b);
+    border: 1px solid #7c3aed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 6px;
+  }
+
+  .hidden { display: none !important; }
+
+  .click-hint {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  .event-banner {
+    background: linear-gradient(90deg, #7c2d12, #9a3412);
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.8rem;
+  }
+  .event-banner.show { display: flex; }
+
+  .tier-header {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 8px 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #334155;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">Corporate <span>Empire</span></div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Cash</div>
+        <div class="stat-value money" id="money">$0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Income / sec</div>
+        <div class="stat-value income" id="income">$0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Reputation</div>
+        <div class="stat-value rep" id="reputation">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Prestige</div>
+        <div class="stat-value prestige" id="prestigePts">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Office Lv</div>
+        <div class="stat-value" id="officeLevel">1</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="hire">Hire</button>
+        <button class="tab" data-tab="products">Products</button>
+        <button class="tab" data-tab="rivals">Rivals</button>
+      </div>
+
+      <div class="tab-content active" id="tab-hire">
+        <h2>Hire Staff</h2>
+        <div class="hire-list" id="hireList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-products">
+        <h2>Product Tiers</h2>
+        <div class="product-list" id="productList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-rivals">
+        <h2>Market Rivals</h2>
+        <div class="rival-list" id="rivalList"></div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="office-floor">
+      <div class="event-banner" id="eventBanner">
+        <span id="eventText"></span>
+        <button class="btn btn-sm btn-warning" onclick="dismissEvent()">Dismiss</button>
+      </div>
+
+      <div class="floor-header">
+        <div>
+          <div class="floor-title" id="officeName">Garage Startup</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;" id="companyLabel">Choose a company type</div>
+        </div>
+        <div class="company-type-badge" id="typeBadge">—</div>
+      </div>
+
+      <!-- Reputation Rank Bar -->
+      <div class="rep-bar-wrap">
+        <div class="rep-bar-header">
+          <div class="rep-rank" id="repRankName">Unknown</div>
+          <div class="rep-next" id="repNext">—</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill rep" id="repProgress" style="width:0%"></div>
+        </div>
+        <div class="rep-benefits" id="repBenefits">Build reputation to unlock product tiers & bonuses</div>
+      </div>
+
+      <div class="desks-grid" id="desksGrid"></div>
+      <div class="click-hint">Click desks for bonus cash • Higher reputation unlocks higher product tiers</div>
+
+      <div class="expand-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:600;font-size:0.82rem;">Expand Office</div>
+            <div style="font-size:0.68rem;color:var(--muted);" id="expandDesc">+2 desks & better hires</div>
+          </div>
+          <button class="btn btn-warning" id="expandBtn" onclick="expandOffice()">Expand</button>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="expandProgress" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="upgrades">Upgrades</button>
+        <button class="tab" data-tab="prestige">Prestige</button>
+        <button class="tab" data-tab="reputation">Rep Info</button>
+      </div>
+
+      <div class="tab-content active" id="tab-upgrades">
+        <h2>Office Upgrades</h2>
+        <div class="upgrade-list" id="upgradeList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-prestige">
+        <h2>Go Public / Prestige</h2>
+        <div class="prestige-box">
+          <div style="font-weight:700;margin-bottom:5px;">🏆 IPO / Sell Company</div>
+          <div style="font-size:0.72rem;color:#c4b5fd;margin-bottom:8px;">
+            Cash in for Prestige Points. Resets company but keeps permanent bonuses.
+          </div>
+          <div style="font-size:0.78rem;margin-bottom:8px;">
+            Value: <strong id="companyValue">$0</strong><br>
+            Gain: <strong id="prestigeGain" class="prestige">0</strong> pts
+          </div>
+          <button class="btn btn-purple" id="prestigeBtn" onclick="doPrestige()" disabled>Go Public</button>
+        </div>
+        <div style="margin-top:12px;">
+          <h2>Permanent Bonuses</h2>
+          <div id="prestigeBonuses" style="font-size:0.78rem;color:var(--muted);"></div>
+        </div>
+        <div style="margin-top:12px;">
+          <h2>Empire History</h2>
+          <div id="empireHistory" style="font-size:0.72rem;color:var(--muted);"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-reputation">
+        <h2>Reputation Ranks</h2>
+        <div id="repRankList" style="font-size:0.78rem;"></div>
+      </div>
+
+      <h2 style="margin-top:10px;">Company Log</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="companyModal">
+    <div class="modal">
+      <h2>Choose Your Company Type</h2>
+      <p>Each type has unique product tiers, staff bonuses, and rivals. Prestige later to try another.</p>
+      <div class="company-grid" id="companyOptions"></div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;" id="startBtn" onclick="startCompany()" disabled>
+        Launch Company
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+// ===================== REPUTATION RANKS =====================
+const REP_RANKS = [
+  { id: "unknown",   name: "Unknown",        min: 0,   color: "#64748b", incomeBonus: 1.00, productUnlock: 1, rivalDiscount: 1.00, desc: "Nobody knows you yet" },
+  { id: "local",     name: "Local Name",     min: 15,  color: "#94a3b8", incomeBonus: 1.05, productUnlock: 1, rivalDiscount: 0.95, desc: "+5% income" },
+  { id: "regional",  name: "Regional Player",min: 40,  color: "#60a5fa", incomeBonus: 1.12, productUnlock: 2, rivalDiscount: 0.90, desc: "+12% income · Tier 2 products" },
+  { id: "national",  name: "National Brand", min: 90,  color: "#a78bfa", incomeBonus: 1.22, productUnlock: 3, rivalDiscount: 0.85, desc: "+22% income · Tier 3 products" },
+  { id: "global",    name: "Global Force",   min: 180, color: "#f472b6", incomeBonus: 1.35, productUnlock: 4, rivalDiscount: 0.75, desc: "+35% income · Tier 4 products" },
+  { id: "legendary", name: "Legendary",      min: 350, color: "#fbbf24", incomeBonus: 1.55, productUnlock: 4, rivalDiscount: 0.65, desc: "+55% income · Max prestige bonus" },
+];
+
+function getRepRank(rep) {
+  let rank = REP_RANKS[0];
+  for (const r of REP_RANKS) {
+    if (rep >= r.min) rank = r;
+  }
+  return rank;
+}
+
+function getNextRank(rep) {
+  for (const r of REP_RANKS) {
+    if (rep < r.min) return r;
+  }
+  return null;
+}
+
+// ===================== COMPANY TYPES =====================
+const COMPANY_TYPES = [
+  { id: "tech",    name: "Tech Startup",     emoji: "💻", desc: "Software & AI. High growth.", staffBonus: { dev: 1.35, intern: 1.15 }, color: "#3b82f6" },
+  { id: "food",    name: "Restaurant Chain", emoji: "🍔", desc: "Food empire. Steady cash.", staffBonus: { sales: 1.30, manager: 1.20 }, color: "#f59e0b" },
+  { id: "fashion", name: "Fashion House",    emoji: "👗", desc: "Style & hype. Rep focused.", staffBonus: { designer: 1.40, sales: 1.15 }, color: "#ec4899" },
+  { id: "film",    name: "Film Studio",      emoji: "🎬", desc: "Content & blockbusters.", staffBonus: { designer: 1.25, exec: 1.20 }, color: "#a855f7" },
+  { id: "space",   name: "Space Company",    emoji: "🚀", desc: "Rockets. Extra prestige.", staffBonus: { dev: 1.25, exec: 1.35 }, color: "#06b6d4" },
+];
+
+// ===================== PRODUCT TIERS =====================
+// tier 1 = starter, tier 2 needs Regional, tier 3 National, tier 4 Global
+// also requires previous tier product launched (chain)
+const PRODUCTS_BY_TYPE = {
+  tech: [
+    { id: "app",   name: "Mobile App",        tier: 1, cost: 180,  income: 7,   time: 14, rep: 6,  desc: "Consumer app" },
+    { id: "saas",  name: "SaaS Platform",      tier: 2, cost: 750,  income: 22,  time: 32, rep: 14, desc: "B2B subscription", requires: "app" },
+    { id: "ai",    name: "AI Model",           tier: 3, cost: 2800, income: 65,  time: 55, rep: 28, desc: "Cutting-edge AI", requires: "saas" },
+    { id: "os",    name: "Operating System",   tier: 4, cost: 14000,income: 190, time: 110,rep: 55, desc: "Platform play", requires: "ai" },
+  ],
+  food: [
+    { id: "burger",    name: "Signature Burger",   tier: 1, cost: 140,  income: 5.5, time: 12, rep: 5,  desc: "Crowd favorite" },
+    { id: "franchise", name: "Franchise Package",  tier: 2, cost: 850,  income: 26,  time: 36, rep: 16, desc: "Scale the brand", requires: "burger" },
+    { id: "ghost",     name: "Ghost Kitchen Net",  tier: 3, cost: 2400, income: 52,  time: 48, rep: 22, desc: "Delivery empire", requires: "franchise" },
+    { id: "fine",      name: "Fine Dining Chain",  tier: 4, cost: 11000,income: 155, time: 95, rep: 45, desc: "Premium experience", requires: "ghost" },
+  ],
+  fashion: [
+    { id: "tee",     name: "Logo Tee Line",       tier: 1, cost: 160,  income: 6.5, time: 13, rep: 7,  desc: "Entry collection" },
+    { id: "season",  name: "Seasonal Collection", tier: 2, cost: 950,  income: 25,  time: 40, rep: 18, desc: "Runway ready", requires: "tee" },
+    { id: "collab",  name: "Celebrity Collab",    tier: 3, cost: 3200, income: 75,  time: 52, rep: 32, desc: "Hype drop", requires: "season" },
+    { id: "luxury",  name: "Luxury House Brand",  tier: 4, cost: 16000,income: 210, time: 120,rep: 65, desc: "House of prestige", requires: "collab" },
+  ],
+  film: [
+    { id: "short",       name: "Short Film",        tier: 1, cost: 220,  income: 8,   time: 16, rep: 9,  desc: "Festival bait" },
+    { id: "series",      name: "Web Series",        tier: 2, cost: 1000, income: 28,  time: 42, rep: 17, desc: "Streaming content", requires: "short" },
+    { id: "blockbuster", name: "Blockbuster Film",  tier: 3, cost: 4200, income: 88,  time: 65, rep: 36, desc: "Big budget", requires: "series" },
+    { id: "franchise",   name: "Movie Franchise",   tier: 4, cost: 20000,income: 260, time: 140,rep: 75, desc: "Cinematic universe", requires: "blockbuster" },
+  ],
+  space: [
+    { id: "sat",     name: "CubeSat",              tier: 1, cost: 350,  income: 11,  time: 22, rep: 10, desc: "Tiny satellite" },
+    { id: "launch",  name: "Orbital Launch",       tier: 2, cost: 1800, income: 45,  time: 50, rep: 24, desc: "Rocket delivery", requires: "sat" },
+    { id: "station", name: "Station Module",       tier: 3, cost: 7500, income: 130, time: 85, rep: 42, desc: "Habitat tech", requires: "launch" },
+    { id: "mars",    name: "Mars Mission",         tier: 4, cost: 38000,income: 380, time: 170,rep: 100,desc: "Legendary achievement", requires: "station" },
+  ]
+};
+
+const ROLES = [
+  { id: "intern",     name: "Intern",        emoji: "🧑‍💻", baseCost: 25,  baseIncome: 1.1, desc: "Cheap labor" },
+  { id: "sales",      name: "Sales Rep",     emoji: "📞", baseCost: 70,  baseIncome: 3.2, desc: "Closes deals" },
+  { id: "dev",        name: "Developer",     emoji: "💻", baseCost: 140, baseIncome: 5.8, desc: "Builds product" },
+  { id: "designer",   name: "Designer",      emoji: "🎨", baseCost: 110, baseIncome: 4.3, desc: "Makes it pretty" },
+  { id: "manager",    name: "Manager",       emoji: "👔", baseCost: 280, baseIncome: 9.5, desc: "Boosts team" },
+  { id: "exec",       name: "Executive",     emoji: "🤵", baseCost: 750, baseIncome: 22,  desc: "High value" },
+  { id: "ceo_assist", name: "CEO Assistant", emoji: "📋", baseCost: 1400,baseIncome: 42,  desc: "Elite support" },
+];
+
+const UPGRADES = [
+  { id: "coffee",    name: "Coffee Machine",    cost: 100,  desc: "+15% income", effect: s => s.incomeMult *= 1.15 },
+  { id: "desks",     name: "Ergonomic Desks",   cost: 250,  desc: "+20% income", effect: s => s.incomeMult *= 1.20 },
+  { id: "wifi",      name: "Fiber Internet",    cost: 400,  desc: "+25% income", effect: s => s.incomeMult *= 1.25 },
+  { id: "training",  name: "Training Program",  cost: 600,  desc: "+30% speed", effect: s => s.speedMult *= 1.30 },
+  { id: "hr",        name: "HR Department",     cost: 1000, desc: "+40% income", effect: s => s.incomeMult *= 1.40 },
+  { id: "marketing", name: "Marketing Team",    cost: 1600, desc: "+25% product income & rep", effect: s => { s.productMult *= 1.25; s.repMult *= 1.2; } },
+  { id: "automation",name: "Automation Tools",  cost: 2500, desc: "Big efficiency boost", effect: s => { s.incomeMult *= 1.5; s.speedMult *= 1.2; } },
+  { id: "brand",     name: "Strong Brand",      cost: 4000, desc: "+50% income", effect: s => s.incomeMult *= 1.50 },
+  { id: "ai_tools",  name: "AI Assistants",     cost: 9000, desc: "Massive leap", effect: s => { s.incomeMult *= 2; s.speedMult *= 1.3; } },
+];
+
+const RIVAL_NAMES = {
+  tech: ["Nexlify", "CodeVortex", "PixelForge", "QuantumSoft", "ByteRush"],
+  food: ["BurgerKingpin", "TastyEmpire", "GrillMaster Co", "FastBite Inc", "FlavorCorp"],
+  fashion: ["StyleHaus", "TrendForce", "LuxeThread", "VogueVault", "ChicDynamics"],
+  film: ["SilverScreen Co", "FrameWorks", "StoryForge", "CinemaPeak", "ReelPower"],
+  space: ["OrbitDyn", "StarHaul", "VoidTech", "AstroLift", "CosmosCorp"]
+};
+
+const OFFICE_NAMES = [
+  "Garage Startup", "Shared Coworking", "Small Office Suite",
+  "Downtown Floor", "Corporate Tower", "Global HQ", "Empire Campus"
+];
+
+// ===================== STATE =====================
+const state = {
+  money: 80,
+  totalEarned: 0,
+  reputation: 0,
+  officeLevel: 1,
+  desks: 4,
+  employees: [],
+  upgrades: {},
+  incomeMult: 1,
+  speedMult: 1,
+  productMult: 1,
+  repMult: 1,
+  companyType: null,
+  products: [],
+  rivals: [],
+  prestige: 0,
+  prestigeBonuses: { income: 1, startCash: 0, desks: 0, rep: 1 },
+  companiesSold: [],
+  lastTick: Date.now(),
+  selectedCompany: null,
+  activeEvent: null,
+  gameStarted: false,
+  lastRepRank: "unknown",
+};
+
+// ===================== HELPERS =====================
+function $(id) { return document.getElementById(id); }
+
+function formatMoney(n) {
+  if (n >= 1e12) return "$" + (n / 1e12).toFixed(2) + "T";
+  if (n >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
+  if (n >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K";
+  return "$" + Math.floor(n);
+}
+
+function log(msg, type = "info") {
+  const el = $("log");
+  const entry = document.createElement("div");
+  entry.className = "log-entry " + type;
+  const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  entry.textContent = `[${time}] ${msg}`;
+  el.prepend(entry);
+  while (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+function getRoleCost(role) {
+  const owned = state.employees.filter(e => e.roleId === role.id).length;
+  return Math.floor(role.baseCost * Math.pow(1.32, owned));
+}
+
+function getStaffBonus(roleId) {
+  if (!state.companyType) return 1;
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  return type?.staffBonus?.[roleId] || 1;
+}
+
+function getRepIncomeBonus() {
+  return getRepRank(state.reputation).incomeBonus;
+}
+
+function getEmployeeIncome(emp) {
+  const bonus = getStaffBonus(emp.roleId);
+  return emp.baseIncome * state.incomeMult * state.prestigeBonuses.income * getRepIncomeBonus() * bonus * (1 + (emp.level - 1) * 0.22);
+}
+
+function calcStaffIncome() {
+  return state.employees.reduce((sum, e) => sum + getEmployeeIncome(e), 0);
+}
+
+function calcProductIncome() {
+  return state.products
+    .filter(p => p.status === "launched")
+    .reduce((sum, p) => sum + p.income * state.productMult * getRepIncomeBonus(), 0);
+}
+
+function calcIncomePerSec() {
+  return calcStaffIncome() + calcProductIncome();
+}
+
+function companyValue() {
+  return state.money + state.totalEarned * 0.15 + state.reputation * 60 + state.products.filter(p => p.status === "launched").length * 600;
+}
+
+function prestigeGain() {
+  const val = companyValue();
+  let pts = Math.floor(Math.pow(val / 5000, 0.65));
+  if (state.companyType === "space") pts = Math.floor(pts * 1.4);
+  if (state.reputation > 100) pts += Math.floor(state.reputation / 18);
+  const rank = getRepRank(state.reputation);
+  if (rank.id === "legendary") pts = Math.floor(pts * 1.25);
+  return Math.max(0, pts);
+}
+
+function canUnlockProduct(prod) {
+  const rank = getRepRank(state.reputation);
+  if (prod.tier > rank.productUnlock) {
+    const needRank = REP_RANKS.find(r => r.productUnlock >= prod.tier);
+    return { ok: false, reason: `Need ${needRank ? needRank.name : "higher"} reputation` };
+  }
+  if (prod.requires) {
+    const prev = state.products.find(p => p.id === prod.requires && p.status === "launched");
+    if (!prev) {
+      const catalog = PRODUCTS_BY_TYPE[state.companyType] || [];
+      const req = catalog.find(p => p.id === prod.requires);
+      return { ok: false, reason: `Launch ${req ? req.name : "previous tier"} first` };
+    }
+  }
+  return { ok: true };
+}
+
+// ===================== COMPANY START =====================
+function showCompanySelect() {
+  const grid = $("companyOptions");
+  grid.innerHTML = "";
+  COMPANY_TYPES.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "company-option" + (state.selectedCompany === c.id ? " selected" : "");
+    div.innerHTML = `
+      <div class="c-emoji">${c.emoji}</div>
+      <div class="c-name">${c.name}</div>
+      <div class="c-desc">${c.desc}</div>
+    `;
+    div.onclick = () => {
+      state.selectedCompany = c.id;
+      document.querySelectorAll(".company-option").forEach(el => el.classList.remove("selected"));
+      div.classList.add("selected");
+      $("startBtn").disabled = false;
+    };
+    grid.appendChild(div);
+  });
+  $("companyModal").classList.remove("hidden");
+}
+
+function startCompany() {
+  if (!state.selectedCompany) return;
+  state.companyType = state.selectedCompany;
+  state.gameStarted = true;
+  state.lastRepRank = "unknown";
+  $("companyModal").classList.add("hidden");
+
+  state.money = 80 + state.prestigeBonuses.startCash;
+  state.desks = 4 + state.prestigeBonuses.desks;
+
+  spawnRivals();
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  log(`Launched ${type.name}! Build reputation to unlock product tiers.`, "good");
+  toast(`${type.emoji} ${type.name} is live!`);
+  render();
+}
+
+function spawnRivals() {
+  const names = RIVAL_NAMES[state.companyType] || RIVAL_NAMES.tech;
+  state.rivals = names.slice(0, 3).map((name, i) => ({
+    id: "r" + i,
+    name,
+    power: 30 + i * 25 + Math.floor(Math.random() * 20),
+    aggression: 0.3 + Math.random() * 0.4,
+    relation: "neutral",
+  }));
+}
+
+// ===================== RENDER =====================
+function render() {
+  if (!state.gameStarted) return;
+
+  $("money").textContent = formatMoney(state.money);
+  $("income").textContent = formatMoney(calcIncomePerSec()) + "/s";
+  $("reputation").textContent = Math.floor(state.reputation);
+  $("prestigePts").textContent = state.prestige;
+  $("officeLevel").textContent = state.officeLevel;
+
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  $("officeName").textContent = OFFICE_NAMES[Math.min(state.officeLevel - 1, OFFICE_NAMES.length - 1)];
+  $("companyLabel").textContent = type ? type.name : "";
+  $("typeBadge").textContent = type ? type.emoji + " " + type.name : "—";
+
+  // Reputation rank bar
+  const rank = getRepRank(state.reputation);
+  const next = getNextRank(state.reputation);
+  $("repRankName").textContent = rank.name;
+  $("repRankName").style.color = rank.color;
+
+  if (next) {
+    const progress = ((state.reputation - rank.min) / (next.min - rank.min)) * 100;
+    $("repProgress").style.width = Math.min(100, progress) + "%";
+    $("repNext").textContent = `${Math.floor(state.reputation)} / ${next.min} → ${next.name}`;
+  } else {
+    $("repProgress").style.width = "100%";
+    $("repNext").textContent = "Max rank achieved";
+  }
+  $("repBenefits").textContent = rank.desc + ` · ×${rank.incomeBonus.toFixed(2)} income`;
+
+  // Rank-up check
+  if (rank.id !== state.lastRepRank) {
+    state.lastRepRank = rank.id;
+    log(`Reputation rank up: ${rank.name}!`, "rep");
+    toast(`⭐ ${rank.name}!`);
+  }
+
+  // Expand
+  const expandCost = Math.floor(500 * Math.pow(2.15, state.officeLevel - 1));
+  const expandBtn = $("expandBtn");
+  expandBtn.textContent = `Expand — ${formatMoney(expandCost)}`;
+  expandBtn.disabled = state.money < expandCost;
+  $("expandDesc").textContent = `+2 desks · better hires (Lv ${state.officeLevel + 1})`;
+  $("expandProgress").style.width = Math.min(100, (state.money / expandCost) * 100) + "%";
+
+  // Prestige
+  $("companyValue").textContent = formatMoney(companyValue());
+  const pg = prestigeGain();
+  $("prestigeGain").textContent = pg;
+  $("prestigeBtn").disabled = pg < 1;
+  $("prestigeBtn").textContent = pg >= 1 ? `Go Public (+${pg} Prestige)` : "Need more value";
+
+  renderDesks();
+  renderHire();
+  renderProducts();
+  renderRivals();
+  renderUpgrades();
+  renderPrestigeInfo();
+  renderRepInfo();
+}
+
+function renderDesks() {
+  const grid = $("desksGrid");
+  grid.innerHTML = "";
+  for (let i = 0; i < state.desks; i++) {
+    const emp = state.employees[i];
+    const div = document.createElement("div");
+    div.className = "desk " + (emp ? "occupied producing" : "empty");
+    if (emp) {
+      const income = getEmployeeIncome(emp);
+      div.innerHTML = `
+        <div class="emoji">${emp.emoji}</div>
+        <div class="name">${emp.name}</div>
+        <div class="role">${emp.roleName} Lv.${emp.level}</div>
+        <div class="earn">+${formatMoney(income)}/s</div>
+      `;
+      div.onclick = () => collectBonus(i);
+    } else {
+      div.innerHTML = `<div class="emoji">🪑</div><div class="name">Empty</div>`;
+    }
+    grid.appendChild(div);
+  }
+}
+
+function renderHire() {
+  const list = $("hireList");
+  list.innerHTML = "";
+  const maxRole = Math.min(2 + state.officeLevel, ROLES.length);
+
+  ROLES.slice(0, maxRole).forEach(role => {
+    const cost = getRoleCost(role);
+    const canHire = state.money >= cost && state.employees.length < state.desks;
+    const bonus = getStaffBonus(role.id);
+    const bonusTxt = bonus > 1 ? ` <span style="color:var(--accent2)">(+${Math.round((bonus-1)*100)}%)</span>` : "";
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-info">
+        <div class="card-name">${role.emoji} ${role.name}${bonusTxt}</div>
+        <div class="card-desc">${role.desc}</div>
+        <div class="card-stats">+${formatMoney(role.baseIncome * state.incomeMult * state.prestigeBonuses.income * getRepIncomeBonus() * bonus)}/s</div>
+      </div>
+      <button class="btn btn-primary btn-sm" ${canHire ? "" : "disabled"} onclick="hire('${role.id}')">
+        ${formatMoney(cost)}
+      </button>
+    `;
+    list.appendChild(card);
+  });
+
+  if (state.employees.length >= state.desks) {
+    const note = document.createElement("div");
+    note.style.cssText = "font-size:0.7rem;color:var(--muted);text-align:center;padding:5px;";
+    note.textContent = "No free desks — expand!";
+    list.appendChild(note);
+  }
+}
+
+function renderProducts() {
+  const list = $("productList");
+  list.innerHTML = "";
+  if (!state.companyType) return;
+
+  const catalog = PRODUCTS_BY_TYPE[state.companyType] || [];
+  const ownedIds = state.products.map(p => p.id);
+  const rank = getRepRank(state.reputation);
+
+  // Group by tier
+  for (let tier = 1; tier <= 4; tier++) {
+    const tierProds = catalog.filter(p => p.tier === tier);
+    if (tierProds.length === 0) continue;
+
+    const header = document.createElement("div");
+    header.className = "tier-header";
+    const unlocked = rank.productUnlock >= tier;
+    header.textContent = `Tier ${tier}` + (unlocked ? "" : " 🔒");
+    header.style.color = unlocked ? "var(--muted)" : "var(--warning)";
+    list.appendChild(header);
+
+    // Active products of this tier
+    state.products.filter(p => {
+      const cat = catalog.find(c => c.id === p.id);
+      return cat && cat.tier === tier;
+    }).forEach(p => {
+      const card = document.createElement("div");
+      card.className = "product-card " + p.status;
+      if (p.status === "developing") {
+        const pct = Math.min(100, (p.progress / p.maxTime) * 100);
+        card.innerHTML = `
+          <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>🔧 ${p.name}</div>
+          <div class="card-desc">Developing… ${Math.floor(pct)}%</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>✅ ${p.name}</div>
+          <div class="card-stats">+${formatMoney(p.income * state.productMult * getRepIncomeBonus())}/s · +${p.rep} rep</div>
+        `;
+      }
+      list.appendChild(card);
+    });
+
+    // Available / locked
+    tierProds.filter(p => !ownedIds.includes(p.id)).forEach(prod => {
+      const check = canUnlockProduct(prod);
+      const canAfford = state.money >= prod.cost;
+      const card = document.createElement("div");
+      card.className = "card" + (check.ok ? "" : " locked");
+
+      if (check.ok) {
+        card.innerHTML = `
+          <div class="card-info">
+            <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>${prod.name}</div>
+            <div class="card-desc">${prod.desc}</div>
+            <div class="card-stats">+${formatMoney(prod.income)}/s · ${prod.time}s · +${prod.rep} rep</div>
+          </div>
+          <button class="btn btn-success btn-sm" ${canAfford ? "" : "disabled"} onclick="launchProduct('${prod.id}')">
+            ${formatMoney(prod.cost)}
+          </button>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="card-info">
+            <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>${prod.name}</div>
+            <div class="card-desc">${prod.desc}</div>
+            <div class="card-lock">🔒 ${check.reason}</div>
+          </div>
+        `;
+      }
+      list.appendChild(card);
+    });
+  }
+}
+
+function renderRivals() {
+  const list = $("rivalList");
+  list.innerHTML = "";
+  if (state.rivals.length === 0) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:0.78rem;">No rivals yet.</div>`;
+    return;
+  }
+
+  const rank = getRepRank(state.reputation);
+  state.rivals.forEach(r => {
+    if (r.relation === "acquired") return;
+    const buyCost = Math.floor((r.power * 80 + 500) * rank.rivalDiscount);
+    const card = document.createElement("div");
+    card.className = "rival-card" + (r.relation === "hostile" ? "" : " friendly");
+    const relColor = r.relation === "hostile" ? "var(--danger)" : "var(--muted)";
+    card.innerHTML = `
+      <div class="rival-name">${r.name}</div>
+      <div class="rival-power">Power: ${r.power} · <span style="color:${relColor}">${r.relation}</span></div>
+      <div class="rival-actions">
+        <button class="btn btn-sm btn-primary" onclick="competeRival('${r.id}')">Compete ($200)</button>
+        <button class="btn btn-sm btn-danger" onclick="buyoutRival('${r.id}')">Buyout ${formatMoney(buyCost)}</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  if (state.rivals.every(r => r.relation === "acquired")) {
+    list.innerHTML = `<div style="color:var(--accent2);font-size:0.85rem;font-weight:600;">🏆 Market dominated!</div>`;
+  }
+}
+
+function renderUpgrades() {
+  const list = $("upgradeList");
+  list.innerHTML = "";
+  UPGRADES.forEach(upg => {
+    const owned = state.upgrades[upg.id];
+    const card = document.createElement("div");
+    card.className = "card";
+    if (owned) {
+      card.innerHTML = `
+        <div class="card-info">
+          <div class="card-name">✅ ${upg.name}</div>
+          <div class="card-desc">${upg.desc}</div>
+        </div>
+      `;
+    } else {
+      const can = state.money >= upg.cost;
+      card.innerHTML = `
+        <div class="card-info">
+          <div class="card-name">${upg.name}</div>
+          <div class="card-desc">${upg.desc}</div>
+        </div>
+        <button class="btn btn-success btn-sm" ${can ? "" : "disabled"} onclick="buyUpgrade('${upg.id}')">
+          ${formatMoney(upg.cost)}
+        </button>
+      `;
+    }
+    list.appendChild(card);
+  });
+}
+
+function renderPrestigeInfo() {
+  const b = state.prestigeBonuses;
+  $("prestigeBonuses").innerHTML = `
+    <div>Income: <strong>×${b.income.toFixed(2)}</strong></div>
+    <div>Start cash: <strong>+${formatMoney(b.startCash)}</strong></div>
+    <div>Start desks: <strong>+${b.desks}</strong></div>
+    <div>Rep gain: <strong>×${b.rep.toFixed(2)}</strong></div>
+    <div style="margin-top:5px;color:var(--purple);">Total Prestige: ${state.prestige}</div>
+  `;
+  const hist = $("empireHistory");
+  if (state.companiesSold.length === 0) {
+    hist.textContent = "No previous companies.";
+  } else {
+    hist.innerHTML = state.companiesSold.map(c => `• ${c.name} — ${c.pts} prestige`).join("<br>");
+  }
+}
+
+function renderRepInfo() {
+  const list = $("repRankList");
+  const current = getRepRank(state.reputation);
+  list.innerHTML = REP_RANKS.map(r => {
+    const active = r.id === current.id;
+    return `
+      <div style="padding:6px 0;border-bottom:1px solid #1e293b;${active ? 'background:#1e293b;border-radius:6px;padding:6px 8px;' : ''}">
+        <div style="font-weight:700;color:${r.color}">${active ? '▶ ' : ''}${r.name}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${r.min}+ rep · ${r.desc}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ===================== ACTIONS =====================
+function hire(roleId) {
+  const role = ROLES.find(r => r.id === roleId);
+  if (!role || state.employees.length >= state.desks) return;
+  const cost = getRoleCost(role);
+  if (state.money < cost) { toast("Not enough cash"); return; }
+
+  state.money -= cost;
+  const names = ["Alex","Jordan","Sam","Taylor","Casey","Morgan","Riley","Quinn","Avery","Jamie","Cameron","Drew","Parker","Reese"];
+  const emp = {
+    id: Date.now() + Math.random(),
+    roleId: role.id,
+    roleName: role.name,
+    emoji: role.emoji,
+    name: names[Math.floor(Math.random() * names.length)],
+    baseIncome: role.baseIncome,
+    level: 1,
+  };
+  state.employees.push(emp);
+  log(`Hired ${emp.name} (${role.name})`, "good");
+  toast(`Hired ${emp.name}`);
+  render();
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES.find(u => u.id === id);
+  if (!upg || state.upgrades[id] || state.money < upg.cost) return;
+  state.money -= upg.cost;
+  state.upgrades[id] = true;
+  upg.effect(state);
+  log(`Upgrade: ${upg.name}`, "good");
+  toast(`${upg.name} online!`);
+  render();
+}
+
+function expandOffice() {
+  const cost = Math.floor(500 * Math.pow(2.15, state.officeLevel - 1));
+  if (state.money < cost) return;
+  state.money -= cost;
+  state.officeLevel++;
+  state.desks += 2;
+  log(`Office → Level ${state.officeLevel} (+2 desks)`, "good");
+  toast(`Expanded to ${OFFICE_NAMES[Math.min(state.officeLevel - 1, OFFICE_NAMES.length - 1)]}`);
+  render();
+}
+
+function collectBonus(index) {
+  const emp = state.employees[index];
+  if (!emp) return;
+  const bonus = getEmployeeIncome(emp) * (2.5 + Math.random() * 2);
+  state.money += bonus;
+  state.totalEarned += bonus;
+  toast(`+${formatMoney(bonus)} from ${emp.name}`);
+}
+
+function launchProduct(prodId) {
+  const catalog = PRODUCTS_BY_TYPE[state.companyType] || [];
+  const prod = catalog.find(p => p.id === prodId);
+  if (!prod || state.money < prod.cost) return;
+  if (state.products.some(p => p.id === prodId)) return;
+
+  const check = canUnlockProduct(prod);
+  if (!check.ok) {
+    toast(check.reason);
+    return;
+  }
+
+  state.money -= prod.cost;
+  state.products.push({
+    id: prod.id,
+    name: prod.name,
+    income: prod.income,
+    rep: prod.rep,
+    tier: prod.tier,
+    status: "developing",
+    progress: 0,
+    maxTime: prod.time,
+  });
+  log(`Developing Tier ${prod.tier}: ${prod.name}`, "info");
+  toast(`Developing ${prod.name}…`);
+  render();
+}
+
+function competeRival(rivalId) {
+  const r = state.rivals.find(x => x.id === rivalId);
+  if (!r || r.relation === "acquired" || state.money < 200) {
+    if (state.money < 200) toast("Need $200");
+    return;
+  }
+  state.money -= 200;
+  const yourPower = Math.floor(calcIncomePerSec() + state.reputation * 0.6 + state.officeLevel * 10);
+  const winChance = yourPower / (yourPower + r.power);
+
+  if (Math.random() < winChance) {
+    r.power = Math.max(10, Math.floor(r.power * 0.85));
+    state.reputation += 4 * state.repMult * state.prestigeBonuses.rep;
+    state.money += 150 + Math.floor(Math.random() * 100);
+    log(`Beat ${r.name} in the market! +rep`, "good");
+    toast(`Victory vs ${r.name}`);
+    if (r.power < 20) r.relation = "hostile";
+  } else {
+    r.power = Math.floor(r.power * 1.08);
+    r.relation = "hostile";
+    state.reputation = Math.max(0, state.reputation - 2);
+    log(`${r.name} outmaneuvered you.`, "bad");
+    toast(`${r.name} won this round`);
+  }
+  render();
+}
+
+function buyoutRival(rivalId) {
+  const r = state.rivals.find(x => x.id === rivalId);
+  if (!r || r.relation === "acquired") return;
+  const rank = getRepRank(state.reputation);
+  const cost = Math.floor((r.power * 80 + 500) * rank.rivalDiscount);
+  if (state.money < cost) {
+    toast(`Need ${formatMoney(cost)}`);
+    return;
+  }
+  state.money -= cost;
+  r.relation = "acquired";
+  state.reputation += 18 * state.repMult * state.prestigeBonuses.rep;
+  state.incomeMult *= 1.08;
+  log(`Acquired ${r.name}! +rep & income`, "good");
+  toast(`Bought out ${r.name}!`);
+  render();
+}
+
+function doPrestige() {
+  const pts = prestigeGain();
+  if (pts < 1) return;
+
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  state.companiesSold.push({ name: type.name, pts });
+  state.prestige += pts;
+
+  state.prestigeBonuses.income = 1 + state.prestige * 0.04;
+  state.prestigeBonuses.startCash = state.prestige * 40;
+  state.prestigeBonuses.desks = Math.floor(state.prestige / 8);
+  state.prestigeBonuses.rep = 1 + state.prestige * 0.02;
+
+  // Reset
+  state.money = 80 + state.prestigeBonuses.startCash;
+  state.totalEarned = 0;
+  state.reputation = 0;
+  state.officeLevel = 1;
+  state.desks = 4 + state.prestigeBonuses.desks;
+  state.employees = [];
+  state.upgrades = {};
+  state.incomeMult = 1;
+  state.speedMult = 1;
+  state.productMult = 1;
+  state.repMult = 1;
+  state.products = [];
+  state.rivals = [];
+  state.companyType = null;
+  state.selectedCompany = null;
+  state.gameStarted = false;
+  state.activeEvent = null;
+  state.lastRepRank = "unknown";
+
+  log(`IPO complete! +${pts} Prestige.`, "prestige");
+  toast(`🏆 +${pts} Prestige Points!`);
+  $("log").innerHTML = "";
+  log(`Prestige total: ${state.prestige}. Permanent bonuses applied.`, "prestige");
+
+  showCompanySelect();
+  render();
+  save();
+}
+
+function dismissEvent() {
+  state.activeEvent = null;
+  $("eventBanner").classList.remove("show");
+}
+
+// ===================== EVENTS & TICK =====================
+function maybeTriggerEvent() {
+  if (state.activeEvent || !state.gameStarted) return;
+  if (Math.random() > 0.011) return;
+
+  const events = [
+    {
+      text: "📈 Market boom! +25% income for 30s",
+      apply: () => { state.incomeMult *= 1.25; setTimeout(() => { state.incomeMult /= 1.25; log("Boom ended.", "info"); }, 30000); }
+    },
+    {
+      text: "😰 Key employee considering a rival offer…",
+      apply: () => {
+        if (state.employees.length > 0 && Math.random() < 0.4) {
+          const idx = Math.floor(Math.random() * state.employees.length);
+          const emp = state.employees[idx];
+          state.employees.splice(idx, 1);
+          log(`${emp.name} left for a rival!`, "bad");
+          toast(`${emp.name} quit!`);
+        }
+      }
+    },
+    {
+      text: "💰 Angel investor drops cash!",
+      apply: () => {
+        const amt = 100 + state.officeLevel * 80 + Math.random() * 200;
+        state.money += amt;
+        log(`Investor injected ${formatMoney(amt)}`, "good");
+      }
+    },
+    {
+      text: "📰 PR crisis — reputation hit",
+      apply: () => {
+        state.reputation = Math.max(0, state.reputation - 8);
+        log("Negative press hurt reputation.", "bad");
+      }
+    },
+    {
+      text: "🎯 Viral moment! Big reputation boost",
+      apply: () => {
+        state.reputation += 14 * state.repMult * state.prestigeBonuses.rep;
+        log("Went viral — reputation soars!", "rep");
+      }
+    },
+    {
+      text: "🏅 Industry award! Reputation + prestige flavor",
+      apply: () => {
+        state.reputation += 20 * state.repMult * state.prestigeBonuses.rep;
+        log("Won an industry award!", "rep");
+      }
+    }
+  ];
+
+  const ev = events[Math.floor(Math.random() * events.length)];
+  state.activeEvent = ev;
+  $("eventText").textContent = ev.text;
+  $("eventBanner").classList.add("show");
+  ev.apply();
+  setTimeout(() => {
+    if (state.activeEvent === ev) dismissEvent();
+  }, 12000);
+}
+
+function tick() {
+  if (!state.gameStarted) return;
+
+  const now = Date.now();
+  const dt = Math.min(0.5, (now - state.lastTick) / 1000);
+  state.lastTick = now;
+
+  const income = calcIncomePerSec() * dt * state.speedMult;
+  if (income > 0) {
+    state.money += income;
+    state.totalEarned += income;
+  }
+
+  // Product development
+  state.products.forEach(p => {
+    if (p.status === "developing") {
+      p.progress += dt * state.speedMult;
+      if (p.progress >= p.maxTime) {
+        p.status = "launched";
+        state.reputation += p.rep * state.repMult * state.prestigeBonuses.rep;
+        log(`🚀 Tier ${p.tier} launched: ${p.name}! +${p.rep} rep`, "good");
+        toast(`${p.name} is live!`);
+      }
+    }
+  });
+
+  // Employee level ups
+  if (Math.random() < 0.006 && state.employees.length > 0) {
+    const emp = state.employees[Math.floor(Math.random() * state.employees.length)];
+    if (emp.level < 12) {
+      emp.level++;
+      log(`${emp.name} → Lv.${emp.level}`, "info");
+    }
+  }
+
+  // Rival growth
+  state.rivals.forEach(r => {
+    if (r.relation === "acquired") return;
+    if (Math.random() < 0.002 * r.aggression) {
+      r.power = Math.floor(r.power * 1.03);
+    }
+  });
+
+  maybeTriggerEvent();
+  render();
+}
+
+// Tabs
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const parent = tab.closest(".panel");
+    parent.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    parent.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    const target = parent.querySelector("#tab-" + tab.dataset.tab);
+    if (target) target.classList.add("active");
+  });
+});
+
+// Save / Load
+function save() {
+  const data = {
+    money: state.money, totalEarned: state.totalEarned, reputation: state.reputation,
+    officeLevel: state.officeLevel, desks: state.desks, employees: state.employees,
+    upgrades: state.upgrades, incomeMult: state.incomeMult, speedMult: state.speedMult,
+    productMult: state.productMult, repMult: state.repMult, companyType: state.companyType,
+    products: state.products, rivals: state.rivals, prestige: state.prestige,
+    prestigeBonuses: state.prestigeBonuses, companiesSold: state.companiesSold,
+    gameStarted: state.gameStarted, lastRepRank: state.lastRepRank,
+  };
+  localStorage.setItem("corpEmpireSave_v3", JSON.stringify(data));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem("corpEmpireSave_v3") || localStorage.getItem("corpEmpireSave_v2");
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    if (!state.lastRepRank) state.lastRepRank = getRepRank(state.reputation).id;
+    return state.gameStarted;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Init
+const loaded = load();
+if (loaded && state.companyType) {
+  log("Progress restored.", "info");
+  render();
+} else {
+  showCompanySelect();
+}
+
+setInterval(tick, 200);
+setInterval(save, 4000);
+
+window.hire = hire;
+window.buyUpgrade = buyUpgrade;
+window.expandOffice = expandOffice;
+window.launchProduct = launchProduct;
+window.competeRival = competeRival;
+window.buyoutRival = buyoutRival;
+window.doPrestige = doPrestige;
+window.startCompany = startCompany;
+window.dismissEvent = dismissEvent;
+window.collectBonus = collectBonus;
+</script>
+</body>
+</html>
