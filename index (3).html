@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corporate Empire: Office Tycoon</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2332;
+    --panel2: #243044;
+    --accent: #3b82f6;
+    --accent2: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --purple: #a855f7;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --desk: #334155;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f, #0f172a);
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+
+  .stats { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+
+  .stat { text-align: right; }
+  .stat-label { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 1.05rem; font-weight: 700; }
+  .money { color: var(--accent2); }
+  .income { color: var(--accent); }
+  .prestige { color: var(--purple); }
+  .rep { color: var(--warning); }
+
+  main {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 12px;
+    padding: 12px;
+    max-width: 1520px;
+    margin: 0 auto;
+    min-height: calc(100vh - 64px);
+  }
+
+  @media (max-width: 1200px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border-radius: 12px;
+    border: 1px solid #334155;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .panel h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    padding: 6px 5px;
+    background: var(--panel2);
+    border: none;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 55px;
+  }
+  .tab.active { background: var(--accent); color: white; }
+  .tab:hover:not(.active) { background: #2d3f56; color: var(--text); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .office-floor {
+    background: #0c1220;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    padding: 14px;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .floor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .floor-title { font-size: 1.05rem; font-weight: 700; }
+  .company-type-badge {
+    background: var(--panel2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .rep-bar-wrap {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #334155;
+  }
+  .rep-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .rep-rank {
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .rep-next {
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .rep-benefits {
+    font-size: 0.65rem;
+    color: var(--accent2);
+    margin-top: 4px;
+  }
+
+  .desks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+    flex: 1;
+  }
+
+  .desk {
+    background: var(--desk);
+    border-radius: 10px;
+    padding: 8px 5px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+  }
+  .desk.empty {
+    border: 2px dashed #475569;
+    background: transparent;
+    color: var(--muted);
+  }
+  .desk.occupied { border-color: #475569; }
+  .desk.occupied:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .desk .emoji { font-size: 1.5rem; }
+  .desk .name { font-size: 0.68rem; font-weight: 600; }
+  .desk .role { font-size: 0.58rem; color: var(--muted); }
+  .desk .earn { font-size: 0.62rem; color: var(--accent2); font-weight: 600; }
+  .desk.producing { animation: pulse 1.2s ease-in-out infinite; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35); }
+    50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+  }
+
+  .hire-list, .product-list, .rival-list, .upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .card {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: #475569; }
+  .card.locked { opacity: 0.55; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-weight: 600; font-size: 0.82rem; }
+  .card-desc { font-size: 0.68rem; color: var(--muted); }
+  .card-stats { font-size: 0.65rem; color: var(--accent2); margin-top: 2px; }
+  .card-lock { font-size: 0.65rem; color: var(--warning); margin-top: 2px; }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .tier-1 { background: #334155; color: #94a3b8; }
+  .tier-2 { background: #1e3a5f; color: #60a5fa; }
+  .tier-3 { background: #3b0764; color: #c084fc; }
+  .tier-4 { background: #713f12; color: #fbbf24; }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 11px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover:not(:disabled) { background: #2563eb; }
+  .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+  .btn-success { background: var(--accent2); color: #052e16; }
+  .btn-success:hover:not(:disabled) { background: #16a34a; }
+  .btn-success:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+  .btn-warning { background: var(--warning); color: #451a03; }
+  .btn-warning:hover:not(:disabled) { background: #d97706; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-purple { background: var(--purple); color: white; }
+  .btn-purple:hover:not(:disabled) { background: #9333ea; }
+  .btn-sm { padding: 5px 8px; font-size: 0.68rem; }
+
+  .log {
+    background: #0c1220;
+    border-radius: 8px;
+    padding: 8px;
+    height: 110px;
+    overflow-y: auto;
+    font-size: 0.68rem;
+    color: var(--muted);
+    border: 1px solid #1e293b;
+  }
+  .log-entry { margin-bottom: 3px; }
+  .log-entry.good { color: var(--accent2); }
+  .log-entry.bad { color: var(--danger); }
+  .log-entry.info { color: var(--accent); }
+  .log-entry.prestige { color: var(--purple); }
+  .log-entry.rep { color: var(--warning); }
+
+  .expand-section {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid #334155;
+  }
+
+  .progress-bar {
+    height: 5px;
+    background: #1e293b;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.3s;
+  }
+  .progress-fill.rep {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+  .toast.show { opacity: 1; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--panel);
+    border-radius: 16px;
+    border: 1px solid #334155;
+    padding: 22px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-size: 1.25rem; margin-bottom: 6px; }
+  .modal p { color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; }
+
+  .company-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .company-option {
+    background: var(--panel2);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .company-option:hover { border-color: var(--accent); }
+  .company-option.selected { border-color: var(--accent); background: #1e3a5f; }
+  .company-option .c-emoji { font-size: 1.8rem; margin-bottom: 4px; }
+  .company-option .c-name { font-weight: 700; font-size: 0.88rem; }
+  .company-option .c-desc { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+
+  .rival-card {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 10px;
+    border-left: 3px solid var(--danger);
+  }
+  .rival-card.friendly { border-left-color: var(--accent2); }
+  .rival-name { font-weight: 700; font-size: 0.85rem; }
+  .rival-power { font-size: 0.72rem; color: var(--muted); }
+  .rival-actions { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+
+  .product-card {
+    background: var(--panel2);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .product-card.launched { border-left: 3px solid var(--accent2); }
+  .product-card.developing { border-left: 3px solid var(--warning); }
+
+  .prestige-box {
+    background: linear-gradient(135deg, #2e1065, #1e1b4b);
+    border: 1px solid #7c3aed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 6px;
+  }
+
+  .hidden { display: none !important; }
+
+  .click-hint {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  .event-banner {
+    background: linear-gradient(90deg, #7c2d12, #9a3412);
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.8rem;
+  }
+  .event-banner.show { display: flex; }
+
+  .tier-header {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 8px 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #334155;
+  }
+
+  .view-toggle{display:flex;gap:4px;margin-bottom:8px}
+  .view-btn{padding:5px 10px;background:var(--panel2);border:1px solid #334155;border-radius:6px;color:var(--muted);font-size:.7rem;font-weight:600;cursor:pointer}
+  .view-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .office-canvas-wrap{flex:1;overflow:auto;border-radius:8px;background:#0a0f18;border:1px solid #1e293b;min-height:200px}
+  .office-grid{display:grid;gap:4px;padding:10px}
+  .ocell{width:68px;height:68px;border-radius:8px;border:2px dashed #1e293b;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:rgba(30,41,59,.35);font-size:.6rem;color:var(--muted)}
+  .ocell:hover{border-color:#475569}
+  .ocell.filled{border-style:solid;border-color:#334155;background:var(--desk)}
+  .ocell.furn{background:#1e293b}
+  .ocell .oe{font-size:1.3rem}
+  .ocell .ol{font-size:.52rem;font-weight:600;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ocell .oa{font-size:.52rem;color:var(--accent2);font-weight:600}
+  .build-bar{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid #334155}
+  .build-item{background:var(--panel2);border:1px solid #334155;border-radius:6px;padding:5px 7px;font-size:.65rem;cursor:pointer;color:var(--text)}
+  .build-item:hover,.build-item.active{border-color:var(--accent)}
+  .build-item.active{background:#1e3a5f}
+  .mg-title{font-size:1.05rem;font-weight:700;margin-bottom:6px;text-align:center}
+  .mg-desc{font-size:.78rem;color:var(--muted);margin-bottom:10px;text-align:center}
+  .mg-score{font-size:1.3rem;font-weight:800;color:var(--accent2);margin:8px 0;text-align:center}
+  .mg-timer{font-size:.85rem;color:var(--warning);margin-bottom:8px;text-align:center}
+  .mg-target{width:64px;height:64px;border-radius:50%;background:var(--accent);margin:10px auto;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;user-select:none;box-shadow:0 0 16px rgba(59,130,246,.4)}
+  .mg-target.hit{background:var(--accent2)}
+  .mg-bar-wrap{height:14px;background:#1e293b;border-radius:7px;overflow:hidden;margin:12px 0;position:relative}
+  .mg-marker{position:absolute;top:0;bottom:0;width:4px;background:#fff;left:50%;transform:translateX(-50%)}
+  .mg-zone{position:absolute;top:0;bottom:0;left:35%;width:30%;background:rgba(34,197,94,.35);border:1px solid var(--accent2)}
+  .dirt-spot{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#78350f,#451a03);cursor:pointer;transform:translate(-50%,-50%)}
+  .mg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:200px;margin:8px auto}
+  .mg-tile{aspect-ratio:1;background:var(--panel2);border-radius:6px;border:2px solid #334155;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center}
+  .mg-tile.lit{background:var(--accent);border-color:var(--accent)}
+  .mg-tile.wrong{background:var(--danger);border-color:var(--danger)}
+
+
+  #office3dWrap{position:relative;width:100%;min-height:260px;height:280px;border-radius:8px;overflow:hidden;border:1px solid #1e293b;background:#0a0f18;display:none}
+  #office3dWrap.active{display:block}
+  #office3d{width:100%;height:100%;display:block}
+  #office2dWrap{display:block}
+  #office2dWrap.hidden-view{display:none}
+  .view-btn{padding:5px 10px;background:var(--panel2);border:1px solid #334155;border-radius:6px;color:var(--muted);font-size:.7rem;font-weight:600;cursor:pointer}
+  .view-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">Corporate <span>Empire</span></div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Cash</div>
+        <div class="stat-value money" id="money">$0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Income / sec</div>
+        <div class="stat-value income" id="income">$0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Reputation</div>
+        <div class="stat-value rep" id="reputation">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Prestige</div>
+        <div class="stat-value prestige" id="prestigePts">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Office Lv</div>
+        <div class="stat-value" id="officeLevel">1</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="hire">Hire</button>
+        <button class="tab" data-tab="products">Products</button>
+        <button class="tab" data-tab="rivals">Rivals</button>
+        <button class="tab" data-tab="minigames">Games</button>
+      </div>
+
+      <div class="tab-content active" id="tab-hire">
+        <h2>Hire Staff</h2>
+        <div class="hire-list" id="hireList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-products">
+        <h2>Product Tiers</h2>
+        <div class="product-list" id="productList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-rivals">
+        <h2>Market Rivals</h2>
+        <div class="rival-list" id="rivalList"></div>
+      </div>
+      <div class="tab-content" id="tab-minigames">
+        <h2>Minigames</h2>
+        <div class="hire-list" id="minigameList"></div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="office-floor">
+      <div class="event-banner" id="eventBanner">
+        <span id="eventText"></span>
+        <button class="btn btn-sm btn-warning" onclick="dismissEvent()">Dismiss</button>
+      </div>
+
+      <div class="floor-header">
+        <div>
+          <div class="floor-title" id="officeName">Garage Startup</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;" id="companyLabel">Choose a company type</div>
+        </div>
+        <div class="company-type-badge" id="typeBadge">—</div>
+      </div>
+
+      <!-- Reputation Rank Bar -->
+      <div class="rep-bar-wrap">
+        <div class="rep-bar-header">
+          <div class="rep-rank" id="repRankName">Unknown</div>
+          <div class="rep-next" id="repNext">—</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill rep" id="repProgress" style="width:0%"></div>
+        </div>
+        <div class="rep-benefits" id="repBenefits">Build reputation to unlock product tiers & bonuses</div>
+      </div>
+
+      <div class="view-toggle">
+        <button class="view-btn active" id="viewOfficeBtn" onclick="setView('office')">2D Office</button>
+        <button class="view-btn" id="view3dBtn" onclick="setView('3d')">3D Office</button>
+        <button class="view-btn" id="viewBuildBtn" onclick="setView('build')">Build</button>
+      </div>
+      <div id="office3dWrap"><canvas id="office3d"></canvas></div>
+      <div class="office-canvas-wrap" id="office2dWrap"><div class="office-grid" id="officeGrid"></div></div>
+      <div class="desks-grid" id="desksGrid" style="display:none"></div>
+      <div class="build-bar" id="buildBar"></div>
+      <div class="click-hint" id="viewHint">Click desks for bonus • Build to place furniture • 3D for immersive view</div>
+
+      <div class="expand-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:600;font-size:0.82rem;">Expand Office</div>
+            <div style="font-size:0.68rem;color:var(--muted);" id="expandDesc">+2 desks & better hires</div>
+          </div>
+          <button class="btn btn-warning" id="expandBtn" onclick="expandOffice()">Expand</button>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="expandProgress" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="upgrades">Upgrades</button>
+        <button class="tab" data-tab="prestige">Prestige</button>
+        <button class="tab" data-tab="reputation">Rep Info</button>
+      </div>
+
+      <div class="tab-content active" id="tab-upgrades">
+        <h2>Office Upgrades</h2>
+        <div class="upgrade-list" id="upgradeList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-prestige">
+        <h2>Go Public / Prestige</h2>
+        <div class="prestige-box">
+          <div style="font-weight:700;margin-bottom:5px;">🏆 IPO / Sell Company</div>
+          <div style="font-size:0.72rem;color:#c4b5fd;margin-bottom:8px;">
+            Cash in for Prestige Points. Resets company but keeps permanent bonuses.
+          </div>
+          <div style="font-size:0.78rem;margin-bottom:8px;">
+            Value: <strong id="companyValue">$0</strong><br>
+            Gain: <strong id="prestigeGain" class="prestige">0</strong> pts
+          </div>
+          <button class="btn btn-purple" id="prestigeBtn" onclick="doPrestige()" disabled>Go Public</button>
+        </div>
+        <div style="margin-top:12px;">
+          <h2>Permanent Bonuses</h2>
+          <div id="prestigeBonuses" style="font-size:0.78rem;color:var(--muted);"></div>
+        </div>
+        <div style="margin-top:12px;">
+          <h2>Empire History</h2>
+          <div id="empireHistory" style="font-size:0.72rem;color:var(--muted);"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-reputation">
+        <h2>Reputation Ranks</h2>
+        <div id="repRankList" style="font-size:0.78rem;"></div>
+      </div>
+
+      <h2 style="margin-top:10px;">Company Log</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="companyModal">
+    <div class="modal">
+      <h2>Choose Your Company Type</h2>
+      <p>Each type has unique product tiers, staff bonuses, and rivals. Prestige later to try another.</p>
+      <div class="company-grid" id="companyOptions"></div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;" id="startBtn" onclick="startCompany()" disabled>
+        Launch Company
+      </button>
+      <button type="button" class="btn btn-warning" style="width:100%;padding:12px;margin-top:8px" id="continueBtn" onclick="hideCompanyModal()">
+        Continue Current Game
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="minigameModal">
+  <div class="modal" style="max-width:420px">
+    <div id="mgContent"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" id="mgCloseBtn" onclick="closeMinigame()">Close</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== REPUTATION RANKS =====================
+const REP_RANKS = [
+  { id: "unknown",   name: "Unknown",        min: 0,   color: "#64748b", incomeBonus: 1.00, productUnlock: 1, rivalDiscount: 1.00, desc: "Nobody knows you yet" },
+  { id: "local",     name: "Local Name",     min: 25,  color: "#94a3b8", incomeBonus: 1.05, productUnlock: 1, rivalDiscount: 0.95, desc: "+5% income" },
+  { id: "regional",  name: "Regional Player",min: 70,  color: "#60a5fa", incomeBonus: 1.12, productUnlock: 2, rivalDiscount: 0.90, desc: "+12% income · Tier 2 products" },
+  { id: "national",  name: "National Brand", min: 160,  color: "#a78bfa", incomeBonus: 1.22, productUnlock: 3, rivalDiscount: 0.85, desc: "+22% income · Tier 3 products" },
+  { id: "global",    name: "Global Force",   min: 320, color: "#f472b6", incomeBonus: 1.35, productUnlock: 4, rivalDiscount: 0.75, desc: "+35% income · Tier 4 products" },
+  { id: "legendary", name: "Legendary",      min: 600, color: "#fbbf24", incomeBonus: 1.55, productUnlock: 4, rivalDiscount: 0.65, desc: "+55% income · Max prestige bonus" },
+];
+
+function getRepRank(rep) {
+  let rank = REP_RANKS[0];
+  for (const r of REP_RANKS) {
+    if (rep >= r.min) rank = r;
+  }
+  return rank;
+}
+
+function getNextRank(rep) {
+  for (const r of REP_RANKS) {
+    if (rep < r.min) return r;
+  }
+  return null;
+}
+
+// ===================== COMPANY TYPES =====================
+const COMPANY_TYPES = [
+  { id: "tech",    name: "Tech Startup",     emoji: "💻", desc: "Software & AI. High growth.", staffBonus: { dev: 1.35, intern: 1.15 }, color: "#3b82f6" },
+  { id: "food",    name: "Restaurant Chain", emoji: "🍔", desc: "Food empire. Steady cash.", staffBonus: { sales: 1.30, manager: 1.20 }, color: "#f59e0b" },
+  { id: "fashion", name: "Fashion House",    emoji: "👗", desc: "Style & hype. Rep focused.", staffBonus: { designer: 1.40, sales: 1.15 }, color: "#ec4899" },
+  { id: "film",    name: "Film Studio",      emoji: "🎬", desc: "Content & blockbusters.", staffBonus: { designer: 1.25, exec: 1.20 }, color: "#a855f7" },
+  { id: "space",   name: "Space Company",    emoji: "🚀", desc: "Rockets. Extra prestige.", staffBonus: { dev: 1.25, exec: 1.35 }, color: "#06b6d4" },
+];
+
+// ===================== PRODUCT TIERS =====================
+// tier 1 = starter, tier 2 needs Regional, tier 3 National, tier 4 Global
+// also requires previous tier product launched (chain)
+const PRODUCTS_BY_TYPE = {
+  tech: [
+    { id: "app",   name: "Mobile App",        tier: 1, cost: 396, income: 2.8, time: 39, rep: 4,  desc: "Consumer app" },
+    { id: "saas",  name: "SaaS Platform",      tier: 2, cost: 1650, income: 8.8, time: 89, rep: 9, desc: "B2B subscription", requires: "app" },
+    { id: "ai",    name: "AI Model",           tier: 3, cost: 6160, income: 26.0, time: 154, rep: 19, desc: "Cutting-edge AI", requires: "saas" },
+    { id: "os",    name: "Operating System",   tier: 4, cost: 30800, income: 76.0, time: 308, rep: 38, desc: "Platform play", requires: "ai" },
+  ],
+  food: [
+    { id: "burger",    name: "Signature Burger",   tier: 1, cost: 308, income: 2.2, time: 33, rep: 3,  desc: "Crowd favorite" },
+    { id: "franchise", name: "Franchise Package",  tier: 2, cost: 1870, income: 10.4, time: 100, rep: 11, desc: "Scale the brand", requires: "burger" },
+    { id: "ghost",     name: "Ghost Kitchen Net",  tier: 3, cost: 5280, income: 20.8, time: 134, rep: 15, desc: "Delivery empire", requires: "franchise" },
+    { id: "fine",      name: "Fine Dining Chain",  tier: 4, cost: 24200, income: 62.0, time: 266, rep: 31, desc: "Premium experience", requires: "ghost" },
+  ],
+  fashion: [
+    { id: "tee",     name: "Logo Tee Line",       tier: 1, cost: 352, income: 2.6, time: 36, rep: 4,  desc: "Entry collection" },
+    { id: "season",  name: "Seasonal Collection", tier: 2, cost: 2090, income: 10.0, time: 112, rep: 12, desc: "Runway ready", requires: "tee" },
+    { id: "collab",  name: "Celebrity Collab",    tier: 3, cost: 7040, income: 30.0, time: 145, rep: 22, desc: "Hype drop", requires: "season" },
+    { id: "luxury",  name: "Luxury House Brand",  tier: 4, cost: 35200, income: 84.0, time: 336, rep: 45, desc: "House of prestige", requires: "collab" },
+  ],
+  film: [
+    { id: "short",       name: "Short Film",        tier: 1, cost: 484, income: 3.2, time: 44, rep: 6,  desc: "Festival bait" },
+    { id: "series",      name: "Web Series",        tier: 2, cost: 2200, income: 11.2, time: 117, rep: 11, desc: "Streaming content", requires: "short" },
+    { id: "blockbuster", name: "Blockbuster Film",  tier: 3, cost: 9240, income: 35.2, time: 182, rep: 25, desc: "Big budget", requires: "series" },
+    { id: "franchise",   name: "Movie Franchise",   tier: 4, cost: 44000, income: 104.0, time: 392, rep: 52, desc: "Cinematic universe", requires: "blockbuster" },
+  ],
+  space: [
+    { id: "sat",     name: "CubeSat",              tier: 1, cost: 770, income: 4.4, time: 61, rep: 7, desc: "Tiny satellite" },
+    { id: "launch",  name: "Orbital Launch",       tier: 2, cost: 3960, income: 18.0, time: 140, rep: 16, desc: "Rocket delivery", requires: "sat" },
+    { id: "station", name: "Station Module",       tier: 3, cost: 39600, income: 16.0, time: 700, rep: 21, desc: "Habitat tech", requires: "launch" },
+    { id: "mars",    name: "Mars Mission",         tier: 4, cost: 83600, income: 152.0, time: 475, rep: 70,desc: "Legendary achievement", requires: "station" },
+  ]
+};
+
+const ROLES = [
+  {id:"intern",name:"Intern",emoji:"🧑‍💻",baseCost:30,baseIncome:1.4,desc:"Cheap · needed for senior hires",unlockLvl:1},
+  {id:"sales",name:"Sales Rep",emoji:"📞",baseCost:90,baseIncome:3.5,desc:"+product income when staffed",unlockLvl:1},
+  {id:"dev",name:"Developer",emoji:"💻",baseCost:160,baseIncome:4.8,desc:"Speeds product development",unlockLvl:1},
+  {id:"designer",name:"Designer",emoji:"🎨",baseCost:140,baseIncome:4.0,desc:"+reputation passive",unlockLvl:2},
+  {id:"manager",name:"Manager",emoji:"👔",baseCost:350,baseIncome:7.0,desc:"Boosts all lower staff +15%",unlockLvl:2,requires:{intern:2}},
+  {id:"exec",name:"Executive",emoji:"🤵",baseCost:900,baseIncome:12,desc:"Strong income · needs managers",unlockLvl:3,requires:{manager:1,sales:2}},
+  {id:"ceo_assist",name:"CEO Assistant",emoji:"📋",baseCost:2200,baseIncome:20,desc:"Elite · needs execs + team",unlockLvl:4,requires:{exec:1,manager:2,dev:2}},
+];
+
+
+const FURNITURE = [
+  {id:"desk",name:"Desk",emoji:"🖥️",cost:0,incomeBonus:0,repBonus:0,isDesk:true},
+  {id:"plant",name:"Plant",emoji:"🪴",cost:80,incomeBonus:0.02,repBonus:1},
+  {id:"coffee_f",name:"Coffee Bar",emoji:"☕",cost:180,incomeBonus:0.03,repBonus:2},
+  {id:"sofa",name:"Sofa",emoji:"🛋️",cost:250,incomeBonus:0.025,repBonus:2},
+  {id:"server",name:"Server",emoji:"🖥️",cost:450,incomeBonus:0.05,repBonus:3},
+  {id:"art",name:"Art",emoji:"🖼️",cost:200,incomeBonus:0.015,repBonus:3},
+  {id:"pingpong",name:"Ping Pong",emoji:"🏓",cost:350,incomeBonus:0.04,repBonus:2},
+  {id:"trophy",name:"Trophy",emoji:"🏆",cost:800,incomeBonus:0.03,repBonus:6},
+];
+const MINIGAMES = [
+  {id:"sales",name:"Sales Call Blitz",emoji:"📞",desc:"Tap fast for cash",cooldown:20},
+  {id:"clean",name:"Office Cleanup",emoji:"🧹",desc:"Click dirt spots",cooldown:25},
+  {id:"pitch",name:"Investor Pitch",emoji:"💼",desc:"Stop in the green zone",cooldown:30},
+  {id:"memory",name:"Team Memory",emoji:"🧠",desc:"Repeat the sequence",cooldown:35},
+];
+
+const UPGRADES = [
+  {id:"coffee_up",name:"Coffee Machine",cost:200,desc:"+10% income",effect:s=>s.incomeMult*=1.10},
+  {id:"chairs",name:"Better Chairs",cost:350,desc:"+8% income",effect:s=>s.incomeMult*=1.08},
+  {id:"desks_up",name:"Ergonomic Desks",cost:600,desc:"+12% income",effect:s=>s.incomeMult*=1.12},
+  {id:"wifi",name:"Fiber Internet",cost:1000,desc:"+12% income · +10% speed",effect:s=>{s.incomeMult*=1.12;s.speedMult*=1.10}},
+  {id:"snacks",name:"Snack Bar",cost:800,desc:"+8% income",effect:s=>s.incomeMult*=1.08},
+  {id:"training",name:"Training Program",cost:1500,desc:"+18% production speed",effect:s=>s.speedMult*=1.18},
+  {id:"hr",name:"HR Department",cost:2500,desc:"+15% income",effect:s=>s.incomeMult*=1.15},
+  {id:"recruiting",name:"Recruiting Agency",cost:3000,desc:"Staff cost -12% (via income)",effect:s=>s.incomeMult*=1.10},
+  {id:"marketing",name:"Marketing Team",cost:4000,desc:"+18% product income & rep",effect:s=>{s.productMult*=1.18;s.repMult*=1.12}},
+  {id:"legal",name:"Legal Team",cost:3500,desc:"+10% income · cheaper buyouts feel",effect:s=>s.incomeMult*=1.10},
+  {id:"automation",name:"Automation Tools",cost:7000,desc:"+25% income · +12% speed",effect:s=>{s.incomeMult*=1.25;s.speedMult*=1.12}},
+  {id:"brand",name:"Strong Brand",cost:10000,desc:"+22% income",effect:s=>s.incomeMult*=1.22},
+  {id:"rd",name:"R&D Lab",cost:12000,desc:"+20% product income · +15% speed",effect:s=>{s.productMult*=1.20;s.speedMult*=1.15}},
+  {id:"security",name:"Security Ops",cost:8000,desc:"+12% income",effect:s=>s.incomeMult*=1.12},
+  {id:"ai_tools",name:"AI Assistants",cost:25000,desc:"+40% income · +20% speed",effect:s=>{s.incomeMult*=1.40;s.speedMult*=1.20}},
+  {id:"global_hq",name:"Global Ops Center",cost:50000,desc:"+50% income",effect:s=>s.incomeMult*=1.50},
+];
+
+const RIVAL_NAMES = {
+  tech: ["Nexlify", "CodeVortex", "PixelForge", "QuantumSoft", "ByteRush"],
+  food: ["BurgerKingpin", "TastyEmpire", "GrillMaster Co", "FastBite Inc", "FlavorCorp"],
+  fashion: ["StyleHaus", "TrendForce", "LuxeThread", "VogueVault", "ChicDynamics"],
+  film: ["SilverScreen Co", "FrameWorks", "StoryForge", "CinemaPeak", "ReelPower"],
+  space: ["OrbitDyn", "StarHaul", "VoidTech", "AstroLift", "CosmosCorp"]
+};
+
+const OFFICE_NAMES = [
+  "Garage Startup", "Shared Coworking", "Small Office Suite",
+  "Downtown Floor", "Corporate Tower", "Global HQ", "Empire Campus"
+];
+
+// ===================== STATE =====================
+const state = {
+  money: 50,
+  totalEarned: 0,
+  reputation: 0,
+  officeLevel: 1,
+  desks: 4,
+  employees: [],
+  upgrades: {},
+  incomeMult: 1,
+  speedMult: 1,
+  productMult: 1,
+  repMult: 1,
+  companyType: null,
+  products: [],
+  rivals: [],
+  prestige: 0,
+  prestigeBonuses: { income: 1, startCash: 0, desks: 0, rep: 1 },
+  companiesSold: [],
+  lastTick: Date.now(),
+  selectedCompany: null,
+  activeEvent: null,
+  gameStarted: false,
+  lastRepRank: "unknown",
+  gridW: 4, gridH: 3, cells: [], furnitureBonus: 1,
+  view: "office", buildSelection: null, mgCooldowns: {}, mgActive: null,
+};
+
+// ===================== HELPERS =====================
+function $(id) { return document.getElementById(id); }
+
+function formatMoney(n) {
+  if (n >= 1e12) return "$" + (n / 1e12).toFixed(2) + "T";
+  if (n >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
+  if (n >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K";
+  return "$" + Math.floor(n);
+}
+
+function log(msg, type = "info") {
+  const el = $("log");
+  const entry = document.createElement("div");
+  entry.className = "log-entry " + type;
+  const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  entry.textContent = `[${time}] ${msg}`;
+  el.prepend(entry);
+  while (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+function getRoleCost(role) {
+  const owned = state.employees.filter(e => e.roleId === role.id).length;
+  return Math.floor(role.baseCost * Math.pow(1.38, owned));
+}
+
+function getStaffBonus(roleId) {
+  if (!state.companyType) return 1;
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  return type?.staffBonus?.[roleId] || 1;
+}
+
+function getRepIncomeBonus() {
+  return getRepRank(state.reputation).incomeBonus;
+}
+
+function getEmployeeIncome(emp) {
+  const bonus = getStaffBonus(emp.roleId);
+  let mult = state.incomeMult * state.prestigeBonuses.income * getRepIncomeBonus() * (state.furnitureBonus||1) * bonus;
+  // Manager synergy: each manager boosts non-manager/exec staff
+  if (emp.roleId !== "manager" && emp.roleId !== "exec" && emp.roleId !== "ceo_assist") {
+    const managers = state.employees.filter(e => e.roleId === "manager").length;
+    mult *= (1 + managers * 0.15);
+  }
+  // Diminishing returns on stacking same role past 3
+  const sameCount = state.employees.filter(e => e.roleId === emp.roleId).length;
+  if (sameCount > 3) mult *= Math.pow(0.92, sameCount - 3);
+  return emp.baseIncome * mult * (1 + (emp.level - 1) * 0.15);
+}
+
+function calcStaffIncome() {
+  return state.employees.reduce((sum, e) => sum + getEmployeeIncome(e), 0);
+}
+
+function calcProductIncome() {
+  const salesCount = state.employees.filter(e => e.roleId === "sales").length;
+  const salesBoost = 1 + salesCount * 0.08;
+  // Devs speed is applied in tick; here sales boost revenue
+  return state.products.filter(p => p.status === "launched")
+    .reduce((s, p) => s + p.income * state.productMult * getRepIncomeBonus() * salesBoost, 0);
+}
+
+function calcIncomePerSec() {
+  return calcStaffIncome() + calcProductIncome();
+}
+
+function companyValue() {
+  return state.money + state.totalEarned * 0.15 + state.reputation * 60 + state.products.filter(p => p.status === "launched").length * 600;
+}
+
+function prestigeGain() {
+  const val = companyValue();
+  let pts = Math.floor(Math.pow(val / 25000, 0.55));
+  if (state.companyType === "space") pts = Math.floor(pts * 1.4);
+  if (state.reputation > 100) pts += Math.floor(state.reputation / 18);
+  const rank = getRepRank(state.reputation);
+  if (rank.id === "legendary") pts = Math.floor(pts * 1.25);
+  return Math.max(0, pts);
+}
+
+function canUnlockProduct(prod) {
+  const rank = getRepRank(state.reputation);
+  if (prod.tier > rank.productUnlock) {
+    const needRank = REP_RANKS.find(r => r.productUnlock >= prod.tier);
+    return { ok: false, reason: `Need ${needRank ? needRank.name : "higher"} reputation` };
+  }
+  if (prod.requires) {
+    const prev = state.products.find(p => p.id === prod.requires && p.status === "launched");
+    if (!prev) {
+      const catalog = PRODUCTS_BY_TYPE[state.companyType] || [];
+      const req = catalog.find(p => p.id === prod.requires);
+      return { ok: false, reason: `Launch ${req ? req.name : "previous tier"} first` };
+    }
+  }
+  return { ok: true };
+}
+
+// ===================== COMPANY START =====================
+
+function initGrid(){
+  state.cells=[];
+  for(let y=0;y<state.gridH;y++) for(let x=0;x<state.gridW;x++)
+    state.cells.push({x,y,type:"empty",empId:null,furnId:null});
+}
+function deskCount(){return state.cells.filter(c=>c.type==="desk").length;}
+function freeDesks(){return state.cells.filter(c=>c.type==="desk"&&!c.empId).length;}
+function calcFurnitureBonus(){
+  let b=1;
+  state.cells.forEach(c=>{
+    if(c.type==="furniture"&&c.furnId){
+      const f=FURNITURE.find(x=>x.id===c.furnId);
+      if(f) b+=f.incomeBonus||0;
+    }
+  });
+  state.furnitureBonus=b; return b;
+}
+function setView(v) {
+  state.view = v;
+  state.buildSelection = null;
+  const ob = document.getElementById("viewOfficeBtn");
+  const b3 = document.getElementById("view3dBtn");
+  const bb = document.getElementById("viewBuildBtn");
+  if (ob) ob.classList.toggle("active", v === "office");
+  if (b3) b3.classList.toggle("active", v === "3d");
+  if (bb) bb.classList.toggle("active", v === "build");
+  const wrap3d = document.getElementById("office3dWrap");
+  const wrap2d = document.getElementById("office2dWrap");
+  if (wrap3d) wrap3d.classList.toggle("active", v === "3d");
+  if (wrap2d) {
+    wrap2d.style.display = (v === "3d") ? "none" : "block";
+  }
+  const h = document.getElementById("viewHint");
+  if (h) {
+    if (v === "build") h.textContent = "Select item below, click a cell to place · Click filled cell to clear";
+    else if (v === "3d") h.textContent = "Drag to rotate · Scroll to zoom · Live 3D office view";
+    else h.textContent = "Click staff desks for bonus · Build mode for furniture · 3D for immersive view";
+  }
+  if (v === "3d") {
+    setTimeout(function() { initOrUpdate3D(); }, 50);
+  }
+  renderDesks();
+  if (typeof renderBuildBar === "function") renderBuildBar();
+}
+function renderBuildBar(){
+  const bar=document.getElementById("buildBar"); if(!bar) return;
+  if(state.view!=="build"){ bar.innerHTML=""; return; }
+  bar.innerHTML="";
+  FURNITURE.forEach(f=>{
+    const btn=document.createElement("button");
+    btn.className="build-item"+(state.buildSelection===f.id?" active":"");
+    btn.textContent=(f.emoji||"")+" "+f.name+(f.isDesk?" (free)":" $"+f.cost);
+    btn.onclick=()=>{ state.buildSelection=state.buildSelection===f.id?null:f.id; renderBuildBar(); };
+    bar.appendChild(btn);
+  });
+}
+
+function showCompanySelect() {
+  // If a real game is already running, don't trap the player
+  if (state.gameStarted && state.companyType) {
+    hideCompanyModal();
+    return;
+  }
+  const grid = document.getElementById("companyOptions");
+  if (!grid) return;
+  grid.innerHTML = "";
+  COMPANY_TYPES.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "company-option" + (state.selectedCompany === c.id ? " selected" : "");
+    div.innerHTML = '<div class="c-emoji">' + c.emoji + '</div><div class="c-name">' + c.name + '</div><div class="c-desc">' + c.desc + '</div>';
+    div.onclick = function() {
+      state.selectedCompany = c.id;
+      document.querySelectorAll(".company-option").forEach(el => el.classList.remove("selected"));
+      div.classList.add("selected");
+      const btn = document.getElementById("startBtn");
+      if (btn) btn.disabled = false;
+    };
+    grid.appendChild(div);
+  });
+  const modal = document.getElementById("companyModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+  }
+}
+function updateContinueBtn() {
+  const btn = document.getElementById("continueBtn");
+  if (btn) btn.style.display = (state.gameStarted && state.companyType) ? "block" : "none";
+}
+function hideCompanyModal() {
+  updateContinueBtn();
+
+  const modal = document.getElementById("companyModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+}
+
+
+function startCompany() {
+  if (!state.selectedCompany) return;
+  state.companyType = state.selectedCompany;
+  state.gameStarted = true;
+  state.lastRepRank = "unknown";
+  hideCompanyModal();
+
+  state.money = 50 + state.prestigeBonuses.startCash;
+  state.gridW = 4; state.gridH = 3;
+  if (typeof initGrid === "function") initGrid();
+  else { state.cells = []; }
+  const startDesks = 2 + (state.prestigeBonuses.desks || 0);
+  let placed = 0;
+  if (state.cells) {
+    for (const cell of state.cells) {
+      if (placed >= startDesks) break;
+      cell.type = "desk"; placed++;
+    }
+  }
+  state.desks = startDesks;
+
+  spawnRivals();
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  log(`Launched ${type.name}! Build reputation to unlock product tiers.`, "good");
+  toast(`${type.emoji} ${type.name} is live!`);
+  render();
+}
+
+function spawnRivals() {
+  const names = RIVAL_NAMES[state.companyType] || RIVAL_NAMES.tech;
+  state.rivals = names.slice(0, 4).map((name, i) => ({
+    id: "r" + i,
+    name,
+    power: 50 + i * 40 + Math.floor(Math.random() * 30) + state.officeLevel * 5,
+    aggression: 0.3 + Math.random() * 0.4,
+    relation: "neutral",
+  }));
+}
+
+// ===================== RENDER =====================
+function render() {
+  if (!state.gameStarted) return;
+
+  $("money").textContent = formatMoney(state.money);
+  $("income").textContent = formatMoney(calcIncomePerSec()) + "/s";
+  $("reputation").textContent = Math.floor(state.reputation);
+  $("prestigePts").textContent = state.prestige;
+  $("officeLevel").textContent = state.officeLevel;
+
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  $("officeName").textContent = OFFICE_NAMES[Math.min(state.officeLevel - 1, OFFICE_NAMES.length - 1)];
+  $("companyLabel").textContent = type ? type.name : "";
+  $("typeBadge").textContent = type ? type.emoji + " " + type.name : "—";
+
+  // Reputation rank bar
+  const rank = getRepRank(state.reputation);
+  const next = getNextRank(state.reputation);
+  $("repRankName").textContent = rank.name;
+  $("repRankName").style.color = rank.color;
+
+  if (next) {
+    const progress = ((state.reputation - rank.min) / (next.min - rank.min)) * 100;
+    $("repProgress").style.width = Math.min(100, progress) + "%";
+    $("repNext").textContent = `${Math.floor(state.reputation)} / ${next.min} → ${next.name}`;
+  } else {
+    $("repProgress").style.width = "100%";
+    $("repNext").textContent = "Max rank achieved";
+  }
+  $("repBenefits").textContent = rank.desc + ` · ×${rank.incomeBonus.toFixed(2)} income`;
+
+  // Rank-up check
+  if (rank.id !== state.lastRepRank) {
+    state.lastRepRank = rank.id;
+    log(`Reputation rank up: ${rank.name}!`, "rep");
+    toast(`⭐ ${rank.name}!`);
+  }
+
+  // Expand
+  const expandCost = Math.floor(800 * Math.pow(2.6, state.officeLevel - 1));
+  const expandBtn = $("expandBtn");
+  expandBtn.textContent = `Expand — ${formatMoney(expandCost)}`;
+  expandBtn.disabled = state.money < expandCost;
+  $("expandDesc").textContent = `+2 desks · better hires (Lv ${state.officeLevel + 1})`;
+  $("expandProgress").style.width = Math.min(100, (state.money / expandCost) * 100) + "%";
+
+  // Prestige
+  $("companyValue").textContent = formatMoney(companyValue());
+  const pg = prestigeGain();
+  $("prestigeGain").textContent = pg;
+  $("prestigeBtn").disabled = pg < 1;
+  $("prestigeBtn").textContent = pg >= 1 ? `Go Public (+${pg} Prestige)` : "Need more value";
+
+  renderDesks();
+  renderHire();
+  renderProducts();
+  renderRivals();
+  renderUpgrades();
+  renderPrestigeInfo();
+  renderRepInfo();
+  if (typeof renderMinigames === "function") renderMinigames();
+  if (state.view === "3d" && typeof buildOffice3D === "function") buildOffice3D();
+}
+
+function renderDesks() {
+  calcFurnitureBonus();
+  const grid = document.getElementById("officeGrid") || document.getElementById("desksGrid");
+  if (!grid) return;
+  if (grid.id === "officeGrid") {
+    grid.style.gridTemplateColumns = "repeat(" + state.gridW + ", 68px)";
+    grid.innerHTML = "";
+    if (!state.cells || !state.cells.length) initGrid();
+    state.cells.forEach(cell => {
+      const div = document.createElement("div");
+      div.className = "ocell";
+      if (cell.type === "desk") {
+        div.classList.add("filled");
+        const emp = state.employees.find(e => e.id === cell.empId);
+        if (emp) {
+          const income = getEmployeeIncome(emp);
+          div.innerHTML = '<div class="oe">' + emp.emoji + '</div><div class="ol">' + emp.name + '</div><div class="oa">+' + formatMoney(income) + '/s</div>';
+          div.onclick = () => { if (state.view === "office") collectBonusEmp(emp); else { cell.type="empty"; cell.empId=null; cell.furnId=null; render(); } };
+        } else {
+          div.innerHTML = '<div class="oe">🖥️</div><div class="ol">Empty Desk</div>';
+          div.onclick = () => { if (state.view === "build") { cell.type="empty"; cell.empId=null; render(); } };
+        }
+      } else if (cell.type === "furniture") {
+        div.classList.add("filled", "furn");
+        const f = FURNITURE.find(x => x.id === cell.furnId);
+        div.innerHTML = '<div class="oe">' + (f ? f.emoji : "📦") + '</div><div class="ol">' + (f ? f.name : "") + '</div>';
+        div.onclick = () => { if (state.view === "build") { cell.type="empty"; cell.furnId=null; render(); } };
+      } else {
+        div.innerHTML = '<div class="oe">＋</div>';
+        div.onclick = () => placeOnCell(cell);
+      }
+      grid.appendChild(div);
+    });
+    renderBuildBar();
+    return;
+  }
+  // fallback old desks grid
+  grid.innerHTML = "";
+  const desks = Math.max(deskCount(), state.desks || 4);
+  for (let i = 0; i < desks; i++) {
+    const emp = state.employees[i];
+    const div = document.createElement("div");
+    div.className = "desk " + (emp ? "occupied producing" : "empty");
+    if (emp) {
+      const income = getEmployeeIncome(emp);
+      div.innerHTML = '<div class="emoji">' + emp.emoji + '</div><div class="name">' + emp.name + '</div><div class="role">' + emp.roleName + ' Lv.' + emp.level + '</div><div class="earn">+' + formatMoney(income) + '/s</div>';
+      div.onclick = () => collectBonus(i);
+    } else {
+      div.innerHTML = '<div class="emoji">🪑</div><div class="name">Empty</div>';
+    }
+    grid.appendChild(div);
+  }
+}
+function placeOnCell(cell) {
+  if (state.view !== "build" || !state.buildSelection) return;
+  const f = FURNITURE.find(x => x.id === state.buildSelection);
+  if (!f || cell.type !== "empty") return;
+  if (!f.isDesk && state.money < f.cost) { toast("Not enough cash"); return; }
+  if (!f.isDesk) state.money -= f.cost;
+  if (f.isDesk) { cell.type = "desk"; cell.empId = null; cell.furnId = null; log("Placed desk", "info"); }
+  else {
+    cell.type = "furniture"; cell.furnId = f.id; cell.empId = null;
+    if (f.repBonus) state.reputation += f.repBonus * (state.repMult || 1) * (state.prestigeBonuses.rep || 1);
+    log("Placed " + f.name, "good"); toast((f.emoji || "") + " " + f.name);
+  }
+  render();
+}
+function collectBonusEmp(emp) {
+  if (!emp) return;
+  const bonus = getEmployeeIncome(emp) * (4 + emp.level * 0.8 + Math.random() * 3);
+  state.money += bonus; state.totalEarned += bonus;
+  toast("+" + formatMoney(bonus) + " from " + emp.name);
+}
+
+
+function renderHire() {
+  const list = $("hireList");
+  list.innerHTML = "";
+  const maxRole = ROLES.length;
+
+  ROLES.forEach(role => {
+    if (role.unlockLvl && state.officeLevel < role.unlockLvl - 1) return; // show 1 level early as locked
+    const cost = getRoleCost(role);
+    const free = typeof freeDesks === "function" ? freeDesks() : (state.desks - state.employees.length);
+    let reqOk = true;
+    if (role.requires) {
+      for (const [needId, needCount] of Object.entries(role.requires)) {
+        if (state.employees.filter(e => e.roleId === needId).length < needCount) reqOk = false;
+      }
+    }
+    const canHire = state.money >= cost && free > 0 && (!role.unlockLvl || state.officeLevel >= role.unlockLvl) && reqOk;
+    const bonus = getStaffBonus(role.id);
+    const bonusTxt = bonus > 1 ? ` <span style="color:var(--accent2)">(+${Math.round((bonus-1)*100)}%)</span>` : "";
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-info">
+        <div class="card-name">${role.emoji} ${role.name}${bonusTxt}</div>
+        <div class="card-desc">${role.desc + (role.requires ? ' · needs ' + Object.entries(role.requires).map(([k,v])=>{const rr=ROLES.find(x=>x.id===k);return v+' '+(rr?rr.name:k);}).join(', ') : '') + (role.unlockLvl && state.officeLevel < role.unlockLvl ? ' · office Lv'+role.unlockLvl : '')}</div>
+        <div class="card-stats">+${formatMoney(role.baseIncome * state.incomeMult * state.prestigeBonuses.income * getRepIncomeBonus() * bonus)}/s</div>
+      </div>
+      <button class="btn btn-primary btn-sm" ${canHire ? "" : "disabled"} onclick="hire('${role.id}')">
+        ${formatMoney(cost)}
+      </button>
+    `;
+    list.appendChild(card);
+  });
+
+  if (state.employees.length >= state.desks) {
+    const note = document.createElement("div");
+    note.style.cssText = "font-size:0.7rem;color:var(--muted);text-align:center;padding:5px;";
+    note.textContent = "No free desks — expand!";
+    list.appendChild(note);
+  }
+}
+
+function renderProducts() {
+  const list = $("productList");
+  list.innerHTML = "";
+  if (!state.companyType) return;
+
+  const catalog = PRODUCTS_BY_TYPE[state.companyType] || [];
+  const ownedIds = state.products.map(p => p.id);
+  const rank = getRepRank(state.reputation);
+
+  // Group by tier
+  for (let tier = 1; tier <= 4; tier++) {
+    const tierProds = catalog.filter(p => p.tier === tier);
+    if (tierProds.length === 0) continue;
+
+    const header = document.createElement("div");
+    header.className = "tier-header";
+    const unlocked = rank.productUnlock >= tier;
+    header.textContent = `Tier ${tier}` + (unlocked ? "" : " 🔒");
+    header.style.color = unlocked ? "var(--muted)" : "var(--warning)";
+    list.appendChild(header);
+
+    // Active products of this tier
+    state.products.filter(p => {
+      const cat = catalog.find(c => c.id === p.id);
+      return cat && cat.tier === tier;
+    }).forEach(p => {
+      const card = document.createElement("div");
+      card.className = "product-card " + p.status;
+      if (p.status === "developing") {
+        const pct = Math.min(100, (p.progress / p.maxTime) * 100);
+        card.innerHTML = `
+          <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>🔧 ${p.name}</div>
+          <div class="card-desc">Developing… ${Math.floor(pct)}%</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>✅ ${p.name}</div>
+          <div class="card-stats">+${formatMoney(p.income * state.productMult * getRepIncomeBonus())}/s · +${p.rep} rep</div>
+        `;
+      }
+      list.appendChild(card);
+    });
+
+    // Available / locked
+    tierProds.filter(p => !ownedIds.includes(p.id)).forEach(prod => {
+      const check = canUnlockProduct(prod);
+      const canAfford = state.money >= prod.cost;
+      const card = document.createElement("div");
+      card.className = "card" + (check.ok ? "" : " locked");
+
+      if (check.ok) {
+        card.innerHTML = `
+          <div class="card-info">
+            <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>${prod.name}</div>
+            <div class="card-desc">${prod.desc}</div>
+            <div class="card-stats">+${formatMoney(prod.income)}/s · ${prod.time}s · +${prod.rep} rep</div>
+          </div>
+          <button class="btn btn-success btn-sm" ${canAfford ? "" : "disabled"} onclick="launchProduct('${prod.id}')">
+            ${formatMoney(prod.cost)}
+          </button>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="card-info">
+            <div class="card-name"><span class="tier-badge tier-${tier}">T${tier}</span>${prod.name}</div>
+            <div class="card-desc">${prod.desc}</div>
+            <div class="card-lock">🔒 ${check.reason}</div>
+          </div>
+        `;
+      }
+      list.appendChild(card);
+    });
+  }
+}
+
+function renderRivals() {
+  const list = $("rivalList");
+  list.innerHTML = "";
+  if (state.rivals.length === 0) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:0.78rem;">No rivals yet.</div>`;
+    return;
+  }
+
+  const rank = getRepRank(state.reputation);
+  state.rivals.forEach(r => {
+    if (r.relation === "acquired") return;
+    const buyCost = Math.floor(((r.power * 400 + 3000 + calcIncomePerSec() * 40)) * rank.rivalDiscount);
+    const card = document.createElement("div");
+    card.className = "rival-card" + (r.relation === "hostile" ? "" : " friendly");
+    const relColor = r.relation === "hostile" ? "var(--danger)" : "var(--muted)";
+    card.innerHTML = `
+      <div class="rival-name">${r.name}</div>
+      <div class="rival-power">Power: ${r.power} · <span style="color:${relColor}">${r.relation}</span></div>
+      <div class="rival-actions">
+        <button class="btn btn-sm btn-primary" onclick="competeRival('${r.id}')">Compete ($350)</button>
+        <button class="btn btn-sm btn-danger" onclick="buyoutRival('${r.id}')">Buyout ${formatMoney(buyCost)}</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  if (state.rivals.every(r => r.relation === "acquired")) {
+    list.innerHTML = `<div style="color:var(--accent2);font-size:0.85rem;font-weight:600;">🏆 Market dominated!</div>`;
+  }
+}
+
+function renderUpgrades() {
+  const list = $("upgradeList");
+  list.innerHTML = "";
+  UPGRADES.forEach(upg => {
+    const owned = state.upgrades[upg.id];
+    const card = document.createElement("div");
+    card.className = "card";
+    if (owned) {
+      card.innerHTML = `
+        <div class="card-info">
+          <div class="card-name">✅ ${upg.name}</div>
+          <div class="card-desc">${upg.desc}</div>
+        </div>
+      `;
+    } else {
+      const can = state.money >= upg.cost;
+      card.innerHTML = `
+        <div class="card-info">
+          <div class="card-name">${upg.name}</div>
+          <div class="card-desc">${upg.desc}</div>
+        </div>
+        <button class="btn btn-success btn-sm" ${can ? "" : "disabled"} onclick="buyUpgrade('${upg.id}')">
+          ${formatMoney(upg.cost)}
+        </button>
+      `;
+    }
+    list.appendChild(card);
+  });
+}
+
+function renderPrestigeInfo() {
+  const b = state.prestigeBonuses;
+  $("prestigeBonuses").innerHTML = `
+    <div>Income: <strong>×${b.income.toFixed(2)}</strong></div>
+    <div>Start cash: <strong>+${formatMoney(b.startCash)}</strong></div>
+    <div>Start desks: <strong>+${b.desks}</strong></div>
+    <div>Rep gain: <strong>×${b.rep.toFixed(2)}</strong></div>
+    <div style="margin-top:5px;color:var(--purple);">Total Prestige: ${state.prestige}</div>
+  `;
+  const hist = $("empireHistory");
+  if (state.companiesSold.length === 0) {
+    hist.textContent = "No previous companies.";
+  } else {
+    hist.innerHTML = state.companiesSold.map(c => `• ${c.name} — ${c.pts} prestige`).join("<br>");
+  }
+}
+
+function renderRepInfo() {
+  const list = $("repRankList");
+  const current = getRepRank(state.reputation);
+  list.innerHTML = REP_RANKS.map(r => {
+    const active = r.id === current.id;
+    return `
+      <div style="padding:6px 0;border-bottom:1px solid #1e293b;${active ? 'background:#1e293b;border-radius:6px;padding:6px 8px;' : ''}">
+        <div style="font-weight:700;color:${r.color}">${active ? '▶ ' : ''}${r.name}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${r.min}+ rep · ${r.desc}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ===================== ACTIONS =====================
+function hire(roleId) {
+  const role = ROLES.find(r => r.id === roleId);
+  if (!role) return;
+  if (role.unlockLvl && state.officeLevel < role.unlockLvl) {
+    toast("Need office level " + role.unlockLvl); return;
+  }
+  if (role.requires) {
+    for (const [needId, needCount] of Object.entries(role.requires)) {
+      const have = state.employees.filter(e => e.roleId === needId).length;
+      if (have < needCount) {
+        const needRole = ROLES.find(r => r.id === needId);
+        toast("Need " + needCount + "x " + (needRole ? needRole.name : needId)); return;
+      }
+    }
+  }
+  const freeCell = (state.cells||[]).find(c => c.type==="desk" && !c.empId);
+  const deskLimit = state.cells ? freeDesks() : ((state.desks||4) - state.employees.length);
+  if (!freeCell && deskLimit <= 0) { toast("No free desk — build more!"); return; }
+  const cost = getRoleCost(role);
+  if (state.money < cost) { toast("Not enough cash"); return; }
+  state.money -= cost;
+  const names = ["Alex","Jordan","Sam","Taylor","Casey","Morgan","Riley","Quinn","Avery","Jamie","Cameron","Drew","Parker","Reese"];
+  const emp = {
+    id: Date.now() + Math.random(),
+    roleId: role.id, roleName: role.name, emoji: role.emoji,
+    name: names[Math.floor(Math.random() * names.length)],
+    baseIncome: role.baseIncome, level: 1,
+  };
+  state.employees.push(emp);
+  if (freeCell) freeCell.empId = emp.id;
+  log("Hired " + emp.name + " (" + role.name + ")", "good");
+  toast("Hired " + emp.name);
+  render();
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES.find(u => u.id === id);
+  if (!upg || state.upgrades[id] || state.money < upg.cost) return;
+  state.money -= upg.cost;
+  state.upgrades[id] = true;
+  upg.effect(state);
+  log(`Upgrade: ${upg.name}`, "good");
+  toast(`${upg.name} online!`);
+  render();
+}
+
+function expandOffice() {
+  const cost = Math.floor(800 * Math.pow(2.6, state.officeLevel - 1));
+  if (state.money < cost) return;
+  state.money -= cost;
+  state.officeLevel++;
+  state.desks += 2;
+  if (state.gridW) {
+    if (state.officeLevel % 2 === 0) state.gridW = Math.min(8, state.gridW + 1);
+    else state.gridH = Math.min(6, (state.gridH || 3) + 1);
+    const existing = new Set((state.cells||[]).map(c => c.x + "," + c.y));
+    for (let y = 0; y < state.gridH; y++) for (let x = 0; x < state.gridW; x++) {
+      if (!existing.has(x + "," + y)) state.cells.push({ x, y, type: "empty", empId: null, furnId: null });
+    }
+  }
+  log(`Office → Level ${state.officeLevel} (+2 desks)`, "good");
+  toast(`Expanded to ${OFFICE_NAMES[Math.min(state.officeLevel - 1, OFFICE_NAMES.length - 1)]}`);
+  render();
+}
+
+function collectBonus(index) {
+  const emp = state.employees[index];
+  if (!emp) return;
+  const bonus = getEmployeeIncome(emp) * (4 + emp.level * 0.8 + Math.random() * 3);
+  state.money += bonus;
+  state.totalEarned += bonus;
+  toast(`+${formatMoney(bonus)} from ${emp.name}`);
+}
+
+function launchProduct(prodId) {
+  const catalog = PRODUCTS_BY_TYPE[state.companyType] || [];
+  const prod = catalog.find(p => p.id === prodId);
+  if (!prod || state.money < prod.cost) return;
+  if (state.products.some(p => p.id === prodId)) return;
+
+  const check = canUnlockProduct(prod);
+  if (!check.ok) {
+    toast(check.reason);
+    return;
+  }
+
+  state.money -= prod.cost;
+  state.products.push({
+    id: prod.id,
+    name: prod.name,
+    income: prod.income,
+    rep: prod.rep,
+    tier: prod.tier,
+    status: "developing",
+    progress: 0,
+    maxTime: prod.time,
+  });
+  log(`Developing Tier ${prod.tier}: ${prod.name}`, "info");
+  toast(`Developing ${prod.name}…`);
+  render();
+}
+
+function competeRival(rivalId) {
+  const r = state.rivals.find(x => x.id === rivalId);
+  if (!r || r.relation === "acquired" || state.money < 350) {
+    if (state.money < 350) toast("Need $350");
+    return;
+  }
+  state.money -= 350;
+  const yourPower = Math.floor(calcIncomePerSec() + state.reputation * 0.6 + state.officeLevel * 10);
+  const winChance = yourPower / (yourPower + r.power);
+
+  if (Math.random() < winChance) {
+    r.power = Math.max(10, Math.floor(r.power * 0.85));
+    state.reputation += 4 * state.repMult * state.prestigeBonuses.rep;
+    state.money += 150 + Math.floor(Math.random() * 100);
+    log(`Beat ${r.name} in the market! +rep`, "good");
+    toast(`Victory vs ${r.name}`);
+    if (r.power < 20) r.relation = "hostile";
+  } else {
+    r.power = Math.floor(r.power * 1.08);
+    r.relation = "hostile";
+    state.reputation = Math.max(0, state.reputation - 2);
+    log(`${r.name} outmaneuvered you.`, "bad");
+    toast(`${r.name} won this round`);
+  }
+  render();
+}
+
+function buyoutRival(rivalId) {
+  const r = state.rivals.find(x => x.id === rivalId);
+  if (!r || r.relation === "acquired") return;
+  const rank = getRepRank(state.reputation);
+  const cost = Math.floor(((r.power * 400 + 3000 + calcIncomePerSec() * 40)) * rank.rivalDiscount);
+  if (state.money < cost) {
+    toast(`Need ${formatMoney(cost)}`);
+    return;
+  }
+  state.money -= cost;
+  r.relation = "acquired";
+  state.reputation += 18 * state.repMult * state.prestigeBonuses.rep;
+  state.incomeMult *= 1.04;
+  log(`Acquired ${r.name}! +rep & income`, "good");
+  toast(`Bought out ${r.name}!`);
+  render();
+}
+
+function doPrestige() {
+  const pts = prestigeGain();
+  if (pts < 1) return;
+
+  const type = COMPANY_TYPES.find(c => c.id === state.companyType);
+  state.companiesSold.push({ name: type.name, pts });
+  state.prestige += pts;
+
+  state.prestigeBonuses.income = 1 + state.prestige * 0.025;
+  state.prestigeBonuses.startCash = state.prestige * 25;
+  state.prestigeBonuses.desks = Math.floor(state.prestige / 8);
+  state.prestigeBonuses.rep = 1 + state.prestige * 0.02;
+
+  // Reset
+  state.money = 50 + state.prestigeBonuses.startCash;
+  state.totalEarned = 0;
+  state.reputation = 0;
+  state.officeLevel = 1;
+  state.desks = 4 + state.prestigeBonuses.desks;
+  state.employees = [];
+  state.upgrades = {};
+  state.incomeMult = 1;
+  state.speedMult = 1;
+  state.productMult = 1;
+  state.repMult = 1;
+  state.products = [];
+  state.rivals = [];
+  state.companyType = null;
+  state.selectedCompany = null;
+  state.gameStarted = false;
+  state.activeEvent = null;
+  state.lastRepRank = "unknown";
+
+  log(`IPO complete! +${pts} Prestige.`, "prestige");
+  toast(`🏆 +${pts} Prestige Points!`);
+  $("log").innerHTML = "";
+  log(`Prestige total: ${state.prestige}. Permanent bonuses applied.`, "prestige");
+
+  showCompanySelect();
+  render();
+  save();
+}
+
+function dismissEvent() {
+  state.activeEvent = null;
+  $("eventBanner").classList.remove("show");
+}
+
+// ===================== EVENTS & TICK =====================
+function maybeTriggerEvent() {
+  if (state.activeEvent || !state.gameStarted) return;
+  if (Math.random() > 0.004) return;
+
+  const events = [
+    {
+      text: "📈 Market boom! +25% income for 30s",
+      apply: () => { state.incomeMult *= 1.25; setTimeout(() => { state.incomeMult /= 1.25; log("Boom ended.", "info"); }, 30000); }
+    },
+    {
+      text: "😰 Key employee considering a rival offer…",
+      apply: () => {
+        if (state.employees.length > 0 && Math.random() < 0.4) {
+          const idx = Math.floor(Math.random() * state.employees.length);
+          const emp = state.employees[idx];
+          state.employees.splice(idx, 1);
+          log(`${emp.name} left for a rival!`, "bad");
+          toast(`${emp.name} quit!`);
+        }
+      }
+    },
+    {
+      text: "💰 Angel investor drops cash!",
+      apply: () => {
+        const amt = 100 + state.officeLevel * 80 + Math.random() * 200;
+        state.money += amt;
+        log(`Investor injected ${formatMoney(amt)}`, "good");
+      }
+    },
+    {
+      text: "📰 PR crisis — reputation hit",
+      apply: () => {
+        state.reputation = Math.max(0, state.reputation - 8);
+        log("Negative press hurt reputation.", "bad");
+      }
+    },
+    {
+      text: "🎯 Viral moment! Big reputation boost",
+      apply: () => {
+        state.reputation += 14 * state.repMult * state.prestigeBonuses.rep;
+        log("Went viral — reputation soars!", "rep");
+      }
+    },
+    {
+      text: "🏅 Industry award! Reputation + prestige flavor",
+      apply: () => {
+        state.reputation += 20 * state.repMult * state.prestigeBonuses.rep;
+        log("Won an industry award!", "rep");
+      }
+    }
+  ];
+
+  const ev = events[Math.floor(Math.random() * events.length)];
+  state.activeEvent = ev;
+  $("eventText").textContent = ev.text;
+  $("eventBanner").classList.add("show");
+  ev.apply();
+  setTimeout(() => {
+    if (state.activeEvent === ev) dismissEvent();
+  }, 12000);
+}
+
+function tick() {
+  if (!state.gameStarted) return;
+
+  const now = Date.now();
+  const dt = Math.min(0.5, (now - state.lastTick) / 1000);
+  state.lastTick = now;
+
+  const income = calcIncomePerSec() * dt * state.speedMult;
+  if (income > 0) {
+    state.money += income;
+    state.totalEarned += income;
+  }
+  const designers = (state.employees||[]).filter(e => e.roleId === "designer").length;
+  if (designers > 0) state.reputation += designers * 0.015 * dt * (state.repMult || 1);
+
+  // Product development
+  state.products.forEach(p => {
+    if (p.status === "developing") {
+      const devs = (state.employees||[]).filter(e => e.roleId === "dev").length; p.progress += dt * state.speedMult * (1 + devs * 0.12);
+      if (p.progress >= p.maxTime) {
+        p.status = "launched";
+        state.reputation += p.rep * state.repMult * state.prestigeBonuses.rep;
+        log(`🚀 Tier ${p.tier} launched: ${p.name}! +${p.rep} rep`, "good");
+        toast(`${p.name} is live!`);
+      }
+    }
+  });
+
+  // Employee level ups
+  if (Math.random() < 0.002 && state.employees.length > 0) {
+    const emp = state.employees[Math.floor(Math.random() * state.employees.length)];
+    if (emp.level < 12) {
+      emp.level++;
+      log(`${emp.name} → Lv.${emp.level}`, "info");
+    }
+  }
+
+  // Rival growth
+  state.rivals.forEach(r => {
+    if (r.relation === "acquired") return;
+    if (Math.random() < 0.002 * r.aggression) {
+      r.power = Math.floor(r.power * 1.05);
+    }
+  });
+
+  
+  // Rival pressure: grow + occasional new rival if market cleared
+  if (Math.random() < 0.003) {
+    const alive = state.rivals.filter(r => r.relation !== "acquired");
+    if (alive.length === 0 && state.rivals.length < 8) {
+      const names = (RIVAL_NAMES[state.companyType] || RIVAL_NAMES.tech);
+      const nm = names[Math.floor(Math.random()*names.length)] + " " + (state.rivals.length+1);
+      state.rivals.push({id:"r"+Date.now(), name:nm, power:80+state.officeLevel*20+Math.floor(Math.random()*40), aggression:0.5, relation:"hostile"});
+      log("New rival enters the market: "+nm, "bad");
+    }
+  }
+
+  maybeTriggerEvent();
+  render();
+}
+
+
+function renderMinigames(){
+  const list=document.getElementById("minigameList"); if(!list) return;
+  list.innerHTML="";
+  const now=Date.now();
+  MINIGAMES.forEach(mg=>{
+    const readyAt=state.mgCooldowns[mg.id]||0;
+    const ready=now>=readyAt;
+    const wait=Math.ceil((readyAt-now)/1000);
+    const card=document.createElement("div"); card.className="card";
+    card.innerHTML='<div class="card-info"><div class="card-name">'+mg.emoji+' '+mg.name+'</div><div class="card-desc">'+mg.desc+'</div>'+(ready?'':'<div class="card-lock">Cooldown '+wait+'s</div>')+'</div><button class="btn btn-primary btn-sm" '+(ready?'':'disabled')+' onclick="startMinigame(\''+mg.id+'\')">'+(ready?'Play':'Wait')+'</button>';
+    list.appendChild(card);
+  });
+}
+function startMinigame(id){
+  const mg=MINIGAMES.find(m=>m.id===id); if(!mg) return;
+  if((state.mgCooldowns[id]||0)>Date.now()){toast("On cooldown");return;}
+  state.mgActive={id,done:false};
+  document.getElementById("minigameModal").classList.remove("hidden");
+  document.getElementById("mgCloseBtn").style.display="none";
+  if(id==="sales") runSalesCall();
+  else if(id==="clean") runCleanup();
+  else if(id==="pitch") runPitch();
+  else if(id==="memory") runMemory();
+}
+function endMinigame(cash,rep,msg){
+  state.money+=cash; state.totalEarned+=cash;
+  state.reputation+=rep*(state.repMult||1)*(state.prestigeBonuses.rep||1);
+  if(state.mgActive) state.mgCooldowns[state.mgActive.id]=Date.now()+((MINIGAMES.find(m=>m.id===state.mgActive.id)||{}).cooldown||20)*1000;
+  state.mgActive=null;
+  document.getElementById("mgCloseBtn").style.display="block";
+  log(msg||("Minigame +"+formatMoney(cash)),"good"); toast(msg||("+"+formatMoney(cash)));
+  render();
+}
+function closeMinigame(){
+  if(state.mgActive&&!state.mgActive.done){ state.mgCooldowns[state.mgActive.id]=Date.now()+10000; state.mgActive=null; }
+  document.getElementById("minigameModal").classList.add("hidden");
+  document.getElementById("mgContent").innerHTML="";
+  render();
+}
+function runSalesCall(){
+  let score=0,timeLeft=8;
+  const c=document.getElementById("mgContent");
+  c.innerHTML='<div class="mg-title">📞 Sales Call Blitz</div><div class="mg-desc">Tap as fast as you can!</div><div class="mg-timer" id="mgTimer">Time: 8s</div><div class="mg-score" id="mgScore">0 hits</div><div class="mg-target" id="mgTarget">💰</div>';
+  document.getElementById("mgTarget").onclick=function(){ if(state.mgActive&&state.mgActive.done)return; score++; document.getElementById("mgScore").textContent=score+" hits"; this.classList.add("hit"); setTimeout(()=>this.classList.remove("hit"),80); };
+  const iv=setInterval(()=>{ timeLeft--; const t=document.getElementById("mgTimer"); if(t)t.textContent="Time: "+timeLeft+"s"; if(timeLeft<=0){ clearInterval(iv); if(state.mgActive)state.mgActive.done=true; const cash=Math.floor(score*5+Math.random()*15); const rep=Math.floor(score/4); c.innerHTML='<div class="mg-title">Results</div><div class="mg-score">'+score+' hits</div><div class="mg-desc">+'+formatMoney(cash)+' · +'+rep+' rep</div>'; endMinigame(cash,rep,"Sales: "+score+" hits +"+formatMoney(cash)); }},1000);
+}
+function runCleanup(){
+  let cleaned=0,timeLeft=10;
+  const c=document.getElementById("mgContent");
+  c.innerHTML='<div class="mg-title">🧹 Office Cleanup</div><div class="mg-desc">Click the dirt!</div><div class="mg-timer" id="mgTimer">Time: 10s</div><div class="mg-score" id="mgScore">0 cleaned</div><div id="dirtArea" style="position:relative;height:160px;background:#0c1220;border-radius:8px;border:1px solid #334155;margin-top:8px"></div>';
+  const area=document.getElementById("dirtArea");
+  function spawn(){ if(state.mgActive&&state.mgActive.done)return; const d=document.createElement("div"); d.className="dirt-spot"; d.style.left=(10+Math.random()*80)+"%"; d.style.top=(10+Math.random()*80)+"%"; d.onclick=function(e){e.stopPropagation();d.remove();cleaned++;const s=document.getElementById("mgScore");if(s)s.textContent=cleaned+" cleaned";}; area.appendChild(d); setTimeout(()=>{if(d.parentNode)d.remove();},2000); }
+  const sp=setInterval(spawn,450); spawn();
+  const iv=setInterval(()=>{ timeLeft--; const t=document.getElementById("mgTimer"); if(t)t.textContent="Time: "+timeLeft+"s"; if(timeLeft<=0){ clearInterval(iv);clearInterval(sp); if(state.mgActive)state.mgActive.done=true; const cash=Math.floor(cleaned*8+10); const rep=Math.floor(cleaned/3); c.innerHTML='<div class="mg-title">Clean!</div><div class="mg-score">'+cleaned+' spots</div><div class="mg-desc">+'+formatMoney(cash)+'</div>'; endMinigame(cash,rep,"Cleanup: "+cleaned+" +"+formatMoney(cash)); }},1000);
+}
+function runPitch(){
+  let pos=0,dir=1,running=true;
+  const c=document.getElementById("mgContent");
+  c.innerHTML='<div class="mg-title">💼 Investor Pitch</div><div class="mg-desc">STOP in the green zone</div><div class="mg-bar-wrap"><div class="mg-zone"></div><div class="mg-marker" id="mgMarker"></div></div><button class="btn btn-warning" id="mgStop" style="display:block;margin:12px auto;padding:10px 24px">STOP</button>';
+  const marker=document.getElementById("mgMarker");
+  (function anim(){ if(!running)return; pos+=dir*2.2; if(pos>=100){pos=100;dir=-1;} if(pos<=0){pos=0;dir=1;} marker.style.left=pos+"%"; requestAnimationFrame(anim); })();
+  document.getElementById("mgStop").onclick=function(){ if(!running)return; running=false; if(state.mgActive)state.mgActive.done=true; const inZ=pos>=35&&pos<=65, perf=pos>=45&&pos<=55; let cash,rep,msg; if(perf){cash=150+Math.floor(Math.random()*80);rep=12;msg="Perfect pitch!";} else if(inZ){cash=70+Math.floor(Math.random()*40);rep=5;msg="Solid pitch";} else {cash=30;rep=0;msg="Missed the mark";} c.innerHTML='<div class="mg-title">'+msg+'</div><div class="mg-score">'+formatMoney(cash)+'</div>'; endMinigame(cash,rep,"Pitch: "+msg+" +"+formatMoney(cash)); };
+}
+function runMemory(){
+  const c=document.getElementById("mgContent");
+  let sequence=[],playerSeq=[],level=1,accepting=false;
+  c.innerHTML='<div class="mg-title">🧠 Team Memory</div><div class="mg-desc">Repeat the sequence</div><div class="mg-score" id="mgScore">Level 1</div><div class="mg-grid" id="mgGrid"></div>';
+  const grid=document.getElementById("mgGrid"); const tiles=[];
+  for(let i=0;i<8;i++){ const t=document.createElement("div"); t.className="mg-tile"; t.textContent=["💼","📊","💡","🚀","⭐","📈","🎯","💎"][i];
+    t.onclick=function(){ if(!accepting||(state.mgActive&&state.mgActive.done))return; playerSeq.push(i); t.classList.add("lit"); setTimeout(()=>t.classList.remove("lit"),200);
+      if(playerSeq[playerSeq.length-1]!==sequence[playerSeq.length-1]){ accepting=false; t.classList.add("wrong"); if(state.mgActive)state.mgActive.done=true; const cash=Math.floor((level-1)*25+10); setTimeout(()=>{ c.innerHTML='<div class="mg-title">Broken</div><div class="mg-score">Level '+level+'</div><div class="mg-desc">+'+formatMoney(cash)+'</div>'; endMinigame(cash,level-1,"Memory lv"+level+" +"+formatMoney(cash)); },400); return; }
+      if(playerSeq.length===sequence.length){ accepting=false; level++; if(level>6){ if(state.mgActive)state.mgActive.done=true; c.innerHTML='<div class="mg-title">Perfect!</div><div class="mg-score">Max</div>'; endMinigame(200,8,"Memory master +$500"); return; } document.getElementById("mgScore").textContent="Level "+level; setTimeout(nextRound,600); } };
+    grid.appendChild(t); tiles.push(t);
+  }
+  function nextRound(){ playerSeq=[]; sequence.push(Math.floor(Math.random()*8)); let i=0; (function show(){ if(i>=sequence.length){accepting=true;return;} const t=tiles[sequence[i]]; t.classList.add("lit"); setTimeout(()=>{t.classList.remove("lit");i++;setTimeout(show,280);},450); })(); }
+  nextRound();
+}
+
+// Tabs
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const parent = tab.closest(".panel");
+    parent.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    parent.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    const target = parent.querySelector("#tab-" + tab.dataset.tab);
+    if (target) target.classList.add("active");
+  });
+});
+
+// Save / Load
+function save() {
+  const data = {
+    money: state.money, totalEarned: state.totalEarned, reputation: state.reputation,
+    officeLevel: state.officeLevel, desks: state.desks, employees: state.employees,
+    upgrades: state.upgrades, incomeMult: state.incomeMult, speedMult: state.speedMult,
+    productMult: state.productMult, repMult: state.repMult, companyType: state.companyType,
+    products: state.products, rivals: state.rivals, prestige: state.prestige,
+    prestigeBonuses: state.prestigeBonuses, companiesSold: state.companiesSold,
+    gameStarted: state.gameStarted, lastRepRank: state.lastRepRank, gridW: state.gridW, gridH: state.gridH, cells: state.cells, mgCooldowns: state.mgCooldowns,
+  };
+  localStorage.setItem("corpEmpireSave_v7", JSON.stringify(data));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem("corpEmpireSave_v7")
+      || localStorage.getItem("corpEmpireSave_v6")
+      || localStorage.getItem("corpEmpireSave_v5")
+      || localStorage.getItem("corpEmpireSave_v4")
+      || localStorage.getItem("corpEmpireSave_v3");
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return false;
+    Object.assign(state, data);
+    if (!state.employees) state.employees = [];
+    if (!state.products) state.products = [];
+    if (!state.rivals) state.rivals = [];
+    if (!state.upgrades) state.upgrades = {};
+    if (!state.prestigeBonuses) state.prestigeBonuses = {income:1,startCash:0,desks:0,rep:1};
+    if (!state.mgCooldowns) state.mgCooldowns = {};
+    if (!state.incomeMult) state.incomeMult = 1;
+    if (!state.speedMult) state.speedMult = 1;
+    if (!state.productMult) state.productMult = 1;
+    if (!state.repMult) state.repMult = 1;
+    if (!state.furnitureBonus) state.furnitureBonus = 1;
+    if (!state.gridW) state.gridW = 4;
+    if (!state.gridH) state.gridH = 3;
+    if (!state.cells || !Array.isArray(state.cells) || !state.cells.length) {
+      try { if (typeof initGrid === "function") initGrid(); } catch (e2) {}
+    }
+    if (!state.lastRepRank) {
+      try { state.lastRepRank = getRepRank(state.reputation || 0).id; } catch (e3) { state.lastRepRank = "unknown"; }
+    }
+    if (state.gameStarted && !state.companyType) {
+      state.gameStarted = false;
+      return false;
+    }
+    return !!state.gameStarted && !!state.companyType;
+  } catch (e) {
+    console.warn("Save load failed", e);
+    return false;
+  }
+}
+
+// Init
+
+document.addEventListener("DOMContentLoaded", function() {
+  setTimeout(function() {
+    if (state.gameStarted && state.companyType) hideCompanyModal();
+  }, 100);
+});
+
+const loaded = load();
+function resumeGame() {
+  hideCompanyModal();
+  if (!state.cells || !state.cells.length) {
+    try { initGrid(); } catch (e) {}
+  }
+  if (state.employees && state.cells) {
+    const seated = new Set(state.cells.filter(c => c.empId).map(c => c.empId));
+    for (const emp of state.employees) {
+      if (!seated.has(emp.id)) {
+        const free = state.cells.find(c => c.type === "desk" && !c.empId);
+        if (free) free.empId = emp.id;
+      }
+    }
+  }
+  log("Progress restored.", "info");
+  render();
+}
+if (loaded && state.companyType && state.gameStarted) {
+  resumeGame();
+} else if (state.gameStarted && state.companyType) {
+  // Partial load / version mismatch but state is valid
+  resumeGame();
+} else {
+  if (loaded && !state.companyType) state.gameStarted = false;
+  showCompanySelect();
+}
+
+// Escape key closes modal if game is running
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape" && state.gameStarted && state.companyType) hideCompanyModal();
+});
+
+
+// ===================== THREE.JS 3D OFFICE =====================
+let scene3d, camera3d, renderer3d, officeGroup, anim3dId;
+let is3dReady = false;
+let drag3d = false, prevX = 0, prevY = 0, rotY = 0.6, rotX = 0.45, zoom3d = 18;
+
+function initOrUpdate3D() {
+  if (typeof THREE === "undefined") {
+    console.warn("Three.js not loaded");
+    return;
+  }
+  const canvas = document.getElementById("office3d");
+  const wrap = document.getElementById("office3dWrap");
+  if (!canvas || !wrap) return;
+
+  if (!is3dReady) {
+    const w = wrap.clientWidth || 400;
+    const h = wrap.clientHeight || 280;
+    scene3d = new THREE.Scene();
+    scene3d.background = new THREE.Color(0x0a0f18);
+    camera3d = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+    renderer3d = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer3d.setSize(w, h);
+    renderer3d.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    // Lights
+    const amb = new THREE.AmbientLight(0x8899aa, 0.55);
+    scene3d.add(amb);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.75);
+    dir.position.set(8, 15, 10);
+    scene3d.add(dir);
+    const fill = new THREE.DirectionalLight(0x4488ff, 0.25);
+    fill.position.set(-6, 5, -4);
+    scene3d.add(fill);
+
+    officeGroup = new THREE.Group();
+    scene3d.add(officeGroup);
+
+    // Controls
+    canvas.addEventListener("pointerdown", function(e) {
+      drag3d = true; prevX = e.clientX; prevY = e.clientY;
+    });
+    window.addEventListener("pointerup", function() { drag3d = false; });
+    window.addEventListener("pointermove", function(e) {
+      if (!drag3d) return;
+      rotY += (e.clientX - prevX) * 0.008;
+      rotX += (e.clientY - prevY) * 0.006;
+      rotX = Math.max(0.2, Math.min(1.2, rotX));
+      prevX = e.clientX; prevY = e.clientY;
+    });
+    canvas.addEventListener("wheel", function(e) {
+      e.preventDefault();
+      zoom3d = Math.max(10, Math.min(35, zoom3d + e.deltaY * 0.02));
+    }, { passive: false });
+
+    is3dReady = true;
+    animate3d();
+  }
+
+  buildOffice3D();
+  updateCamera3D();
+}
+
+function updateCamera3D() {
+  if (!camera3d) return;
+  camera3d.position.x = Math.sin(rotY) * zoom3d * Math.cos(rotX);
+  camera3d.position.y = Math.sin(rotX) * zoom3d + 4;
+  camera3d.position.z = Math.cos(rotY) * zoom3d * Math.cos(rotX);
+  camera3d.lookAt(0, 0, 0);
+}
+
+function animate3d() {
+  anim3dId = requestAnimationFrame(animate3d);
+  if (state.view !== "3d" || !renderer3d) return;
+  updateCamera3D();
+  renderer3d.render(scene3d, camera3d);
+}
+
+function buildOffice3D() {
+  if (!officeGroup || !state.cells) return;
+  while (officeGroup.children.length) {
+    const c = officeGroup.children[0];
+    officeGroup.remove(c);
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) {
+      if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+      else c.material.dispose();
+    }
+  }
+
+  const gw = state.gridW || 4;
+  const gh = state.gridH || 3;
+  const spacing = 2.2;
+  const offsetX = -((gw - 1) * spacing) / 2;
+  const offsetZ = -((gh - 1) * spacing) / 2;
+
+  // Floor
+  const floorGeo = new THREE.PlaneGeometry(gw * spacing + 2, gh * spacing + 2);
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.85, metalness: 0.1 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = 0;
+  officeGroup.add(floor);
+
+  // Grid lines
+  const gridHelper = new THREE.GridHelper(Math.max(gw, gh) * spacing + 1, Math.max(gw, gh), 0x334155, 0x1e293b);
+  gridHelper.position.y = 0.01;
+  officeGroup.add(gridHelper);
+
+  // Cells
+  state.cells.forEach(function(cell) {
+    const x = offsetX + cell.x * spacing;
+    const z = offsetZ + cell.y * spacing;
+
+    if (cell.type === "desk") {
+      // Desk body
+      const deskGeo = new THREE.BoxGeometry(1.6, 0.12, 0.9);
+      const deskMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
+      const desk = new THREE.Mesh(deskGeo, deskMat);
+      desk.position.set(x, 0.55, z);
+      officeGroup.add(desk);
+      // Legs
+      const legGeo = new THREE.BoxGeometry(0.08, 0.5, 0.08);
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+      [[-0.7, -0.35], [0.7, -0.35], [-0.7, 0.35], [0.7, 0.35]].forEach(function(p) {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(x + p[0], 0.25, z + p[1]);
+        officeGroup.add(leg);
+      });
+      // Monitor
+      const monGeo = new THREE.BoxGeometry(0.5, 0.35, 0.06);
+      const monMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, emissive: 0x1e3a5f, emissiveIntensity: 0.4 });
+      const mon = new THREE.Mesh(monGeo, monMat);
+      mon.position.set(x, 0.8, z - 0.2);
+      officeGroup.add(mon);
+
+      const emp = (state.employees || []).find(function(e) { return e.id === cell.empId; });
+      if (emp) {
+        // Simple person (capsule-ish)
+        const bodyGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.7, 8);
+        const colors = { intern: 0x94a3b8, sales: 0x3b82f6, dev: 0x22c55e, designer: 0xec4899, manager: 0xf59e0b, exec: 0xa855f7, ceo_assist: 0xfbbf24 };
+        const bodyMat = new THREE.MeshStandardMaterial({ color: colors[emp.roleId] || 0x60a5fa });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.set(x, 0.95, z + 0.35);
+        officeGroup.add(body);
+        const headGeo = new THREE.SphereGeometry(0.18, 8, 8);
+        const head = new THREE.Mesh(headGeo, bodyMat);
+        head.position.set(x, 1.45, z + 0.35);
+        officeGroup.add(head);
+      }
+    } else if (cell.type === "furniture") {
+      const f = (typeof FURNITURE !== "undefined") ? FURNITURE.find(function(x) { return x.id === cell.furnId; }) : null;
+      const colorMap = { plant: 0x22c55e, coffee_f: 0x78350f, sofa: 0x7c3aed, server: 0x334155, art: 0xf472b6, pingpong: 0x06b6d4, trophy: 0xfbbf24 };
+      const col = colorMap[cell.furnId] || 0x64748b;
+      let geo;
+      if (cell.furnId === "plant") geo = new THREE.ConeGeometry(0.35, 0.9, 6);
+      else if (cell.furnId === "sofa") geo = new THREE.BoxGeometry(1.4, 0.45, 0.7);
+      else if (cell.furnId === "server") geo = new THREE.BoxGeometry(0.6, 1.2, 0.5);
+      else geo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+      const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.5 });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, cell.furnId === "server" ? 0.6 : 0.4, z);
+      officeGroup.add(mesh);
+    } else {
+      // Empty pad
+      const padGeo = new THREE.PlaneGeometry(1.5, 1.5);
+      const padMat = new THREE.MeshStandardMaterial({ color: 0x152033, transparent: true, opacity: 0.5 });
+      const pad = new THREE.Mesh(padGeo, padMat);
+      pad.rotation.x = -Math.PI / 2;
+      pad.position.set(x, 0.02, z);
+      officeGroup.add(pad);
+    }
+  });
+}
+
+// Rebuild 3D when rendering if in 3d view
+const _origRenderDesks = typeof renderDesks === "function" ? null : null;
+
+setInterval(tick, 200);
+setInterval(save, 4000);
+
+window.hire = hire;
+window.buyUpgrade = buyUpgrade;
+window.expandOffice = expandOffice;
+window.launchProduct = launchProduct;
+window.competeRival = competeRival;
+window.buyoutRival = buyoutRival;
+window.doPrestige = doPrestige;
+window.startCompany = startCompany;
+window.hideCompanyModal = hideCompanyModal;
+window.dismissEvent = dismissEvent;
+window.collectBonus = collectBonus;
+window.setView = setView;
+window.startMinigame = startMinigame;
+window.closeMinigame = closeMinigame;
+</script>
+</body>
+</html>
